@@ -1,0 +1,542 @@
+/* 
+===========================================
+머니챗(MoneyChat) 레이아웃 시스템
+네이버 가계부 스타일 2-Column 레이아웃
+===========================================
+*/
+
+/* ==================== 
+   1. 메인 앱 레이아웃
+   ==================== */
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+/* ==================== 
+   2. 사이드바 (좌측)
+   ==================== */
+
+.sidebar {
+  width: 280px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-dark);
+  transition: transform var(--transition-normal);
+  z-index: var(--z-fixed);
+}
+
+/* 사이드바 헤더 */
+.sidebar-header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-decoration: none;
+  color: var(--sidebar-text);
+}
+
+.sidebar-logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--primary-green);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: white;
+}
+
+.sidebar-logo-text {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 사이드바 네비게이션 */
+.sidebar-nav {
+  flex: 1;
+  padding: var(--spacing-md) 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav-item {
+  margin-bottom: var(--spacing-xs);
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  color: var(--sidebar-text-inactive);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  border-radius: 0;
+  position: relative;
+}
+
+.sidebar-nav-link:hover {
+  background-color: var(--sidebar-hover);
+  color: var(--sidebar-text);
+}
+
+.sidebar-nav-link.active {
+  background-color: var(--sidebar-active);
+  color: var(--text-white);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sidebar-nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--text-white);
+}
+
+.sidebar-nav-icon {
+  font-size: var(--font-size-lg);
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar-nav-text {
+  flex: 1;
+}
+
+.sidebar-nav-badge {
+  background-color: var(--primary-green);
+  color: var(--text-white);
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  min-width: 20px;
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* 사이드바 푸터 */
+.sidebar-footer {
+  padding: var(--spacing-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+}
+
+.sidebar-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-white);
+}
+
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 2px;
+  color: var(--sidebar-text);
+}
+
+.sidebar-user-email {
+  font-size: var(--font-size-xs);
+  color: var(--sidebar-text-inactive);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==================== 
+   3. 메인 컨텐츠 영역
+   ==================== */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--bg-primary);
+}
+
+/* 메인 헤더 */
+.main-header {
+  height: 64px;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg);
+  box-shadow: var(--shadow-light);
+  z-index: var(--z-sticky);
+}
+
+.main-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.main-header-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.main-header-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.main-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.header-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.header-action-btn:hover {
+  background-color: var(--bg-light-gray);
+  color: var(--text-primary);
+}
+
+/* 메인 바디 */
+.main-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+/* ==================== 
+   4. 모바일 대응
+   ==================== */
+
+/* 사이드바 토글 버튼 (모바일에서만 표시) */
+.sidebar-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-light);
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--bg-light-gray);
+  color: var(--text-primary);
+}
+
+/* 모바일 레이아웃 */
+@media (max-width: 768px) {
+  .app {
+    position: relative;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    z-index: var(--z-modal);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: var(--z-modal-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+  }
+
+  .sidebar-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+
+  .main-body {
+    padding: var(--spacing-md);
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+}
+
+/* 태블릿 레이아웃 */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .sidebar {
+    width: 240px;
+  }
+  
+  .main-body {
+    padding: var(--spacing-md);
+  }
+}
+
+/* ==================== 
+   5. 컨텐츠 카드 레이아웃
+   ==================== */
+
+.content-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: 1fr;
+}
+
+.content-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.content-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.content-grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* 모바일에서는 모든 그리드를 1열로 */
+@media (max-width: 768px) {
+  .content-grid-2,
+  .content-grid-3,
+  .content-grid-auto {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 태블릿에서는 최대 2열 */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .content-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==================== 
+   6. 빠른 액션 플로팅 버튼
+   ==================== */
+
+.fab {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-green);
+  color: var(--text-white);
+  font-size: var(--font-size-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-heavy);
+  transition: all var(--transition-fast);
+  border: none;
+  z-index: var(--z-fixed);
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(3, 199, 90, 0.3);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+/* 모바일에서의 FAB 위치 조정 */
+@media (max-width: 768px) {
+  .fab {
+    bottom: calc(var(--spacing-lg) + 60px); /* 하단 네비게이션 고려 */
+  }
+}
+
+/* ==================== 
+   7. 하단 네비게이션 (모바일)
+   ==================== */
+
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--bg-white);
+  border-top: 1px solid var(--border-light);
+  z-index: var(--z-fixed);
+}
+
+.bottom-nav-list {
+  display: flex;
+  height: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bottom-nav-item {
+  flex: 1;
+}
+
+.bottom-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+  gap: 2px;
+}
+
+.bottom-nav-link.active {
+  color: var(--primary-green);
+}
+
+.bottom-nav-icon {
+  font-size: var(--font-size-lg);
+}
+
+/* 모바일에서 하단 네비게이션 표시 */
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: block;
+  }
+
+  .main-body {
+    padding-bottom: calc(var(--spacing-lg) + 60px);
+  }
+}
+
+/* ==================== 
+   8. 스크롤바 스타일링
+   ==================== */
+
+/* 웹킷 기반 브라우저 */
+.sidebar-nav::-webkit-scrollbar,
+.main-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.main-body::-webkit-scrollbar-track {
+  background: var(--bg-light-gray);
+}
+
+.main-body::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-sm);
+}
+
+.main-body::-webkit-scrollbar-thumb:hover {
+  background: var(--border-dark);
+}
+
+/* ==================== 
+   9. 포커스 관리
+   ==================== */
+
+/* 키보드 내비게이션을 위한 포커스 스타일 */
+.sidebar-nav-link:focus,
+.header-action-btn:focus,
+.bottom-nav-link:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}
+
+/* 마우스 클릭시에는 포커스 링 숨김 */
+.sidebar-nav-link:focus:not(:focus-visible),
+.header-action-btn:focus:not(:focus-visible),
+.bottom-nav-link:focus:not(:focus-visible) {
+  outline: none;
+}

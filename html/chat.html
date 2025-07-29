@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>머니챗 - 대화형 가계부</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/chat.css">
+</head>
+<body>
+    <!-- 메인 앱 컨테이너 -->
+    <div class="app">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <!-- 사이드바 헤더 -->
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">💬</div>
+                    <div class="sidebar-logo-text">머니챗</div>
+                </a>
+            </div>
+
+            <!-- 사이드바 네비게이션 -->
+            <nav class="sidebar-nav">
+                <ul class="sidebar-nav-list">
+                    <li class="sidebar-nav-item">
+                        <a href="dashboard.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">🏠</span>
+                            <span class="sidebar-nav-text">홈</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link active">
+                            <span class="sidebar-nav-icon">💬</span>
+                            <span class="sidebar-nav-text">채팅</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📊</span>
+                            <span class="sidebar-nav-text">엑셀 업로드</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📝</span>
+                            <span class="sidebar-nav-text">내역 관리</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📈</span>
+                            <span class="sidebar-nav-text">리포트</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            <span class="sidebar-nav-text">설정</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 사이드바 푸터 -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">김</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">김머니님</div>
+                        <div class="sidebar-user-email">money@example.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 메인 헤더 -->
+            <header class="main-header">
+                <div class="main-header-left">
+                    <button class="sidebar-toggle">☰</button>
+                    <div>
+                        <h1 class="main-header-title">대화형 가계부</h1>
+                        <p class="main-header-subtitle">편하게 대화하듯 지출을 알려주세요</p>
+                    </div>
+                </div>
+                <div class="main-header-right">
+                    <button class="header-action-btn" title="채팅 히스토리">📋</button>
+                    <button class="header-action-btn" title="설정">⚙️</button>
+                </div>
+            </header>
+
+            <!-- 채팅 컨테이너 -->
+            <div class="chat-container">
+                <!-- 채팅 메시지 영역 -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 웰컴 메시지 -->
+                    <div class="chat-message ai">
+                        <div class="chat-message-content">
+                            <div class="chat-avatar ai">🤖</div>
+                            <div class="chat-bubble">
+                                <div class="welcome-chat-message">
+                                    안녕하세요! 머니챗입니다. 😊<br>
+                                    오늘 지출 내역을 편하게 알려주세요.
+                                    <div class="chat-examples">
+                                        <div class="example-title">💡 이렇게 말해보세요:</div>
+                                        <div class="example-item">"점심에 만원 썼어"</div>
+                                        <div class="example-item">"어제 마트에서 3만원"</div>
+                                        <div class="example-item">"교통비 5천원, 커피 4천원"</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-timestamp">오늘 오후 2:00</div>
+                    </div>
+
+                    <!-- 사용자 메시지 예시 -->
+                    <div class="chat-message user">
+                        <div class="chat-message-content">
+                            <div class="chat-bubble">
+                                어제 스벅에서 친구랑 라떼 마셔서 9천원 썼어
+                            </div>
+                            <div class="chat-avatar user">👤</div>
+                        </div>
+                        <div class="chat-timestamp">오늘 오후 2:05</div>
+                    </div>
+
+                    <!-- AI 확인 메시지 -->
+                    <div class="chat-message ai">
+                        <div class="chat-message-content">
+                            <div class="chat-avatar ai">🤖</div>
+                            <div class="chat-bubble">
+                                <div class="typing-indicator" style="display: none;">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <div class="confirmation-content">
+                                    다음 내용으로 저장할게요:
+                                    <div class="confirmation-card">
+                                        <div class="confirmation-details">
+                                            <div class="confirmation-item">
+                                                <span class="confirmation-icon">📅</span>
+                                                <span class="confirmation-label">날짜:</span>
+                                                <span class="confirmation-value">2025-07-28 (어제)</span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="confirmation-icon">📍</span>
+                                                <span class="confirmation-label">장소:</span>
+                                                <span class="confirmation-value">스타벅스</span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="confirmation-icon">🏷️</span>
+                                                <span class="confirmation-label">카테고리:</span>
+                                                <span class="confirmation-value">카페/음료</span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="confirmation-icon">💰</span>
+                                                <span class="confirmation-label">금액:</span>
+                                                <span class="confirmation-value text-expense">9,000원</span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="confirmation-icon">📝</span>
+                                                <span class="confirmation-label">메모:</span>
+                                                <span class="confirmation-value">친구와 라떼</span>
+                                            </div>
+                                        </div>
+                                        <div class="confirmation-actions">
+                                            <button class="btn btn-sm btn-secondary" onclick="editTransaction()">수정</button>
+                                            <button class="btn btn-sm btn-ghost" onclick="cancelTransaction()">취소</button>
+                                            <button class="btn btn-sm btn-primary" onclick="confirmTransaction()">확인</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-timestamp">오늘 오후 2:05</div>
+                    </div>
+
+                    <!-- 성공 메시지 -->
+                    <div class="chat-message ai" style="display: none;" id="successMessage">
+                        <div class="chat-message-content">
+                            <div class="chat-avatar ai">🤖</div>
+                            <div class="chat-bubble">
+                                <div class="success-message">
+                                    ✅ 완료! 9,000원 지출이 저장되었어요.<br>
+                                    다른 지출도 있다면 언제든 알려주세요!
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-timestamp">오늘 오후 2:06</div>
+                    </div>
+                </div>
+
+                <!-- 채팅 입력 영역 -->
+                <div class="chat-input-container">
+                    <!-- 빠른 제안 버튼들 -->
+                    <div class="quick-suggestions" id="quickSuggestions">
+                        <button class="suggestion-btn" onclick="insertSuggestion('점심')">🍽️ 점심</button>
+                        <button class="suggestion-btn" onclick="insertSuggestion('교통비')">🚇 교통비</button>
+                        <button class="suggestion-btn" onclick="insertSuggestion('커피')">☕ 커피</button>
+                        <button class="suggestion-btn" onclick="insertSuggestion('마트')">🛒 마트</button>
+                    </div>
+
+                    <!-- 입력창 -->
+                    <div class="chat-input-wrapper">
+                        <div class="chat-input-actions-left">
+                            <button class="input-action-btn" title="첨부파일" onclick="handleAttachment()">📎</button>
+                            <button class="input-action-btn" title="음성입력" onclick="handleVoiceInput()">🎤</button>
+                        </div>
+                        <div class="chat-input-field">
+                            <textarea 
+                                id="chatInput" 
+                                placeholder="무엇을 도와드릴까요? 예: '점심 15,000원 썼어'"
+                                rows="1"
+                                maxlength="500"
+                            ></textarea>
+                        </div>
+                        <div class="chat-input-actions-right">
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+                                <span class="send-icon">📤</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 입력 상태 표시 -->
+                    <div class="input-status" id="inputStatus" style="display: none;">
+                        <div class="status-indicator">
+                            <span class="status-icon">⏳</span>
+                            <span class="status-text">AI가 분석하고 있어요...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <ul class="bottom-nav-list">
+            <li class="bottom-nav-item">
+                <a href="dashboard.html" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link active">
+                    <span class="bottom-nav-icon">💬</span>
+                    <span>채팅</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">📝</span>
+                    <span>내역</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">📊</span>
+                    <span>리포트</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 사이드바 백드롭 (모바일) -->
+    <div class="sidebar-backdrop"></div>
+
+    <!-- 수정 모달 -->
+    <div class="modal-overlay" id="editModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">내역 수정</h3>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">날짜</label>
+                    <input type="date" class="form-input" id="editDate" value="2025-07-28">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">장소</label>
+                    <input type="text" class="form-input" id="editPlace" value="스타벅스">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">카테고리</label>
+                    <select class="form-input form-select" id="editCategory">
+                        <option value="cafe">카페/음료</option>
+                        <option value="food">식비</option>
+                        <option value="transport">교통비</option>
+                        <option value="shopping">쇼핑</option>
+                        <option value="etc">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">금액</label>
+                    <input type="number" class="form-input" id="editAmount" value="9000" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">메모</label>
+                    <textarea class="form-input form-textarea" id="editMemo">친구와 라떼</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">취소</button>
+                <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/chat.js"></script>
+</body>
+</html>

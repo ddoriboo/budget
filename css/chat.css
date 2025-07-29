@@ -1,0 +1,546 @@
+/* 
+===========================================
+머니챗(MoneyChat) 채팅 인터페이스 스타일
+===========================================
+*/
+
+/* ==================== 
+   1. 채팅 컨테이너
+   ==================== */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px); /* 헤더 높이 제외 */
+  max-height: calc(100vh - 64px);
+  background-color: var(--bg-primary);
+}
+
+/* ==================== 
+   2. 채팅 메시지 영역
+   ==================== */
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  scroll-behavior: smooth;
+}
+
+/* 채팅 메시지 개별 스타일 */
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.chat-message.user {
+  align-items: flex-end;
+}
+
+.chat-message.ai {
+  align-items: flex-start;
+}
+
+.chat-message-content {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  max-width: 80%;
+}
+
+.chat-message.user .chat-message-content {
+  flex-direction: row-reverse;
+}
+
+/* 채팅 버블 스타일 */
+.chat-bubble {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  box-shadow: var(--shadow-light);
+  position: relative;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.chat-message.ai .chat-bubble {
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  border-bottom-left-radius: var(--spacing-xs);
+}
+
+.chat-message.user .chat-bubble {
+  background-color: var(--primary-green);
+  color: var(--text-white);
+  border-bottom-right-radius: var(--spacing-xs);
+}
+
+/* 아바타 스타일 */
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
+.chat-avatar.ai {
+  background-color: var(--primary-green-light);
+}
+
+.chat-avatar.user {
+  background-color: var(--primary-green-dark);
+  color: var(--text-white);
+}
+
+/* 타임스탬프 */
+.chat-timestamp {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+  padding: 0 var(--spacing-xs);
+}
+
+.chat-message.user .chat-timestamp {
+  text-align: right;
+}
+
+/* ==================== 
+   3. 웰컴 메시지 스타일
+   ==================== */
+
+.welcome-chat-message {
+  margin-bottom: var(--spacing-sm);
+}
+
+.chat-examples {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-light-gray);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.example-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.example-item {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) 0;
+  font-style: italic;
+}
+
+/* ==================== 
+   4. 타이핑 인디케이터
+   ==================== */
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--spacing-sm) 0;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--text-tertiary);
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==================== 
+   5. 확인 카드 스타일
+   ==================== */
+
+.confirmation-content {
+  width: 100%;
+}
+
+.confirmation-card {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--bg-light-gray);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.confirmation-details {
+  margin-bottom: var(--spacing-md);
+}
+
+.confirmation-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.confirmation-item:last-child {
+  margin-bottom: 0;
+}
+
+.confirmation-icon {
+  font-size: var(--font-size-base);
+  width: 20px;
+  text-align: center;
+}
+
+.confirmation-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  min-width: 60px;
+}
+
+.confirmation-value {
+  flex: 1;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: flex-end;
+}
+
+/* ==================== 
+   6. 성공 메시지 스타일
+   ==================== */
+
+.success-message {
+  color: var(--success-color);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== 
+   7. 채팅 입력 영역
+   ==================== */
+
+.chat-input-container {
+  background-color: var(--bg-white);
+  border-top: 1px solid var(--border-light);
+  padding: var(--spacing-md);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 빠른 제안 버튼들 */
+.quick-suggestions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+}
+
+.quick-suggestions::-webkit-scrollbar {
+  display: none;
+}
+
+.suggestion-btn {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-light-gray);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.suggestion-btn:hover {
+  background-color: var(--primary-green-light);
+  border-color: var(--primary-green);
+  color: var(--primary-green-dark);
+}
+
+/* 입력창 래퍼 */
+.chat-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  background-color: var(--bg-light-gray);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.chat-input-wrapper:focus-within {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px var(--primary-green-light);
+}
+
+.chat-input-actions-left {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.input-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.input-action-btn:hover {
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+}
+
+.chat-input-field {
+  flex: 1;
+  min-width: 0;
+}
+
+#chatInput {
+  width: 100%;
+  min-height: 36px;
+  max-height: 120px;
+  padding: var(--spacing-xs) 0;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  resize: none;
+  font-family: inherit;
+}
+
+#chatInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.chat-input-actions-right {
+  display: flex;
+  align-items: flex-end;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-green);
+  color: var(--text-white);
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.send-btn:hover:not(:disabled) {
+  background-color: var(--primary-green-hover);
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  background-color: var(--border-medium);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================== 
+   8. 입력 상태 표시
+   ==================== */
+
+.input-status {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-light-gray);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.status-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ==================== 
+   9. 모바일 대응
+   ==================== */
+
+@media (max-width: 768px) {
+  .chat-container {
+    height: calc(100vh - 64px - 60px); /* 헤더 + 하단 네비게이션 */
+  }
+
+  .chat-messages {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .chat-message-content {
+    max-width: 90%;
+  }
+
+  .chat-bubble {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .chat-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-base);
+  }
+
+  .chat-input-container {
+    padding: var(--spacing-sm);
+    padding-bottom: calc(var(--spacing-sm) + 60px); /* 하단 네비게이션 고려 */
+  }
+
+  .confirmation-actions {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .confirmation-actions .btn {
+    flex: 1;
+    min-width: 60px;
+  }
+}
+
+/* ==================== 
+   10. 스크롤바 스타일링
+   ==================== */
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: var(--bg-light-gray);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-sm);
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--border-dark);
+}
+
+/* ==================== 
+   11. 접근성 및 키보드 네비게이션
+   ==================== */
+
+.suggestion-btn:focus,
+.input-action-btn:focus,
+.send-btn:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}
+
+.confirmation-actions .btn:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 1px;
+}
+
+/* ==================== 
+   12. 다크모드 대응
+   ==================== */
+
+@media (prefers-color-scheme: dark) {
+  .chat-examples {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .confirmation-card {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .chat-input-wrapper {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ==================== 
+   13. 애니메이션 감소 설정 (접근성)
+   ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-message,
+  .typing-indicator span,
+  .status-icon,
+  .send-btn:hover {
+    animation: none;
+    transform: none;
+  }
+  
+  .chat-bubble,
+  .suggestion-btn,
+  .input-action-btn,
+  .send-btn {
+    transition: none;
+  }
+}

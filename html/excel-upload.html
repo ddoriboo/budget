@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>머니챗 - 엑셀 업로드</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/excel-upload.css">
+</head>
+<body>
+    <!-- 메인 앱 컨테이너 -->
+    <div class="app">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <!-- 사이드바 헤더 -->
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">💬</div>
+                    <div class="sidebar-logo-text">머니챗</div>
+                </a>
+            </div>
+
+            <!-- 사이드바 네비게이션 -->
+            <nav class="sidebar-nav">
+                <ul class="sidebar-nav-list">
+                    <li class="sidebar-nav-item">
+                        <a href="dashboard.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">🏠</span>
+                            <span class="sidebar-nav-text">홈</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="chat.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">💬</span>
+                            <span class="sidebar-nav-text">채팅</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link active">
+                            <span class="sidebar-nav-icon">📊</span>
+                            <span class="sidebar-nav-text">엑셀 업로드</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📝</span>
+                            <span class="sidebar-nav-text">내역 관리</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📈</span>
+                            <span class="sidebar-nav-text">리포트</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            <span class="sidebar-nav-text">설정</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 사이드바 푸터 -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">김</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">김머니님</div>
+                        <div class="sidebar-user-email">money@example.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 메인 헤더 -->
+            <header class="main-header">
+                <div class="main-header-left">
+                    <button class="sidebar-toggle">☰</button>
+                    <div>
+                        <h1 class="main-header-title">엑셀 업로드</h1>
+                        <p class="main-header-subtitle">기존 가계부를 쉽게 가져오세요</p>
+                    </div>
+                </div>
+                <div class="main-header-right">
+                    <button class="header-action-btn" title="도움말">❓</button>
+                    <button class="header-action-btn" title="히스토리">📋</button>
+                </div>
+            </header>
+
+            <!-- 메인 바디 -->
+            <div class="main-body">
+                <!-- 업로드 단계 표시 -->
+                <div class="upload-steps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">파일 업로드</div>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">컬럼 매핑</div>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">데이터 검증</div>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-label">완료</div>
+                    </div>
+                </div>
+
+                <!-- 1단계: 파일 업로드 -->
+                <div class="upload-section" id="uploadSection">
+                    <div class="upload-container">
+                        <div class="upload-header">
+                            <h2 class="upload-title">엑셀 파일을 업로드하세요</h2>
+                            <p class="upload-description">
+                                AI가 자동으로 날짜, 금액, 설명 컬럼을 인식하여<br>
+                                머니챗 형식으로 변환해드립니다.
+                            </p>
+                        </div>
+
+                        <!-- 드래그 앤 드롭 영역 -->
+                        <div class="dropzone" id="dropzone">
+                            <div class="dropzone-content">
+                                <div class="dropzone-icon">📁</div>
+                                <div class="dropzone-text">
+                                    <div class="dropzone-main-text">파일을 여기에 드래그하세요</div>
+                                    <div class="dropzone-sub-text">또는 클릭하여 파일을 선택하세요</div>
+                                </div>
+                                <button class="btn btn-primary" onclick="triggerFileInput()">파일 선택하기</button>
+                                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- 파일 정보 -->
+                        <div class="file-info">
+                            <div class="info-item">
+                                <span class="info-label">지원 형식:</span>
+                                <span class="info-value">.xlsx, .xls, .csv</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">최대 크기:</span>
+                                <span class="info-value">10MB</span>
+                            </div>
+                        </div>
+
+                        <!-- 팁 섹션 -->
+                        <div class="tips-section">
+                            <h3 class="tips-title">💡 업로드 팁</h3>
+                            <div class="tips-grid">
+                                <div class="tip-item">
+                                    <div class="tip-icon">📅</div>
+                                    <div class="tip-text">날짜, 금액, 설명이 있는 엑셀이면 어떤 형식도 OK!</div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">🤖</div>
+                                    <div class="tip-text">AI가 자동으로 컬럼을 분석해요</div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">💳</div>
+                                    <div class="tip-text">카드사 내역서도 업로드 가능해요</div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">🔒</div>
+                                    <div class="tip-text">업로드된 파일은 안전하게 처리됩니다</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2단계: 컬럼 매핑 -->
+                <div class="mapping-section" id="mappingSection" style="display: none;">
+                    <div class="mapping-container">
+                        <div class="mapping-header">
+                            <h2 class="section-title">컬럼 매핑 확인</h2>
+                            <p class="section-description">AI가 다음과 같이 인식했어요. 올바른지 확인해주세요.</p>
+                        </div>
+
+                        <!-- 파일 정보 카드 -->
+                        <div class="file-summary-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="file-summary">
+                                        <div class="file-icon">📄</div>
+                                        <div class="file-details">
+                                            <div class="file-name">가계부_2025.xlsx</div>
+                                            <div class="file-stats">총 156개 행 발견</div>
+                                        </div>
+                                        <div class="file-status">
+                                            <span class="badge badge-success">분석 완료</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 매핑 결과 -->
+                        <div class="mapping-results">
+                            <h3 class="mapping-title">엑셀 컬럼 → 머니챗 항목</h3>
+                            <div class="mapping-list">
+                                <div class="mapping-item">
+                                    <div class="excel-column">
+                                        <span class="column-label">A열</span>
+                                        <span class="column-name">"거래일자"</span>
+                                    </div>
+                                    <div class="mapping-arrow">→</div>
+                                    <div class="moneychat-field">
+                                        <span class="field-icon">📅</span>
+                                        <span class="field-name">날짜</span>
+                                        <span class="field-status">✓</span>
+                                    </div>
+                                </div>
+
+                                <div class="mapping-item">
+                                    <div class="excel-column">
+                                        <span class="column-label">B열</span>
+                                        <span class="column-name">"사용처"</span>
+                                    </div>
+                                    <div class="mapping-arrow">→</div>
+                                    <div class="moneychat-field">
+                                        <span class="field-icon">📍</span>
+                                        <span class="field-name">장소</span>
+                                        <span class="field-status">✓</span>
+                                    </div>
+                                </div>
+
+                                <div class="mapping-item">
+                                    <div class="excel-column">
+                                        <span class="column-label">C열</span>
+                                        <span class="column-name">"금액"</span>
+                                    </div>
+                                    <div class="mapping-arrow">→</div>
+                                    <div class="moneychat-field">
+                                        <span class="field-icon">💰</span>
+                                        <span class="field-name">금액</span>
+                                        <span class="field-status">✓</span>
+                                    </div>
+                                </div>
+
+                                <div class="mapping-item">
+                                    <div class="excel-column">
+                                        <span class="column-label">D열</span>
+                                        <span class="column-name">"구분"</span>
+                                    </div>
+                                    <div class="mapping-arrow">→</div>
+                                    <div class="moneychat-field">
+                                        <span class="field-icon">🏷️</span>
+                                        <span class="field-name">카테고리</span>
+                                        <span class="field-status">✓</span>
+                                    </div>
+                                </div>
+
+                                <div class="mapping-item">
+                                    <div class="excel-column">
+                                        <span class="column-label">E열</span>
+                                        <span class="column-name">"메모"</span>
+                                    </div>
+                                    <div class="mapping-arrow">→</div>
+                                    <div class="moneychat-field">
+                                        <span class="field-icon">📝</span>
+                                        <span class="field-name">메모</span>
+                                        <span class="field-status">✓</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 샘플 데이터 미리보기 -->
+                        <div class="preview-section">
+                            <h3 class="preview-title">샘플 데이터 미리보기</h3>
+                            <div class="preview-table">
+                                <div class="table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>날짜</th>
+                                                <th>장소</th>
+                                                <th>금액</th>
+                                                <th>카테고리</th>
+                                                <th>메모</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2025-07-15</td>
+                                                <td>GS25 강남점</td>
+                                                <td class="text-expense">3,500원</td>
+                                                <td>생활용품</td>
+                                                <td>물티슈 구입</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-07-16</td>
+                                                <td>스타벅스</td>
+                                                <td class="text-expense">4,500원</td>
+                                                <td>카페/음료</td>
+                                                <td>아메리카노</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-07-17</td>
+                                                <td>이마트</td>
+                                                <td class="text-expense">45,600원</td>
+                                                <td>식비</td>
+                                                <td>주간 장보기</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 액션 버튼 -->
+                        <div class="mapping-actions">
+                            <button class="btn btn-secondary" onclick="goToStep(1)">이전</button>
+                            <button class="btn btn-outline" onclick="remapColumns()">다시 매핑</button>
+                            <button class="btn btn-primary" onclick="goToStep(3)">확인하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3단계: 대화형 검증 -->
+                <div class="verification-section" id="verificationSection" style="display: none;">
+                    <div class="verification-container">
+                        <!-- 진행률 표시 -->
+                        <div class="verification-progress">
+                            <div class="progress-header">
+                                <h2 class="section-title">엑셀 데이터 확인 중</h2>
+                                <div class="progress-stats">
+                                    <span class="current-item">42</span>
+                                    <span class="separator">/</span>
+                                    <span class="total-items">156</span>
+                                    <span class="progress-label">건</span>
+                                    <span class="progress-percentage">(27%)</span>
+                                </div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 27%"></div>
+                            </div>
+                        </div>
+
+                        <!-- 현재 검증 중인 항목 -->
+                        <div class="current-verification">
+                            <div class="verification-message">
+                                <div class="chat-avatar ai">🤖</div>
+                                <div class="verification-content">
+                                    <div class="verification-text">42번째 내역을 확인해주세요:</div>
+                                    
+                                    <div class="verification-card">
+                                        <div class="verification-details">
+                                            <div class="detail-item">
+                                                <span class="detail-icon">📅</span>
+                                                <span class="detail-value">2025년 7월 15일</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-icon">📍</span>
+                                                <span class="detail-value">GS25 강남점</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-icon">💰</span>
+                                                <span class="detail-value text-expense">3,500원</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-icon">🏷️</span>
+                                                <span class="detail-value">생활용품 <span class="ai-suggestion">(AI 추천)</span></span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-icon">📝</span>
+                                                <span class="detail-value">물티슈 구입</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="verification-actions">
+                                            <button class="btn btn-sm btn-primary" onclick="confirmItem()">확인</button>
+                                            <button class="btn btn-sm btn-secondary" onclick="editItem()">수정</button>
+                                            <button class="btn btn-sm btn-ghost" onclick="deleteItem()">삭제</button>
+                                            <button class="btn btn-sm btn-outline" onclick="skipItem()">건너뛰기</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 빠른 처리 옵션 -->
+                        <div class="quick-options">
+                            <h3 class="quick-options-title">빠른 처리 옵션</h3>
+                            <div class="quick-options-list">
+                                <div class="quick-option">
+                                    <span class="option-text">GS25 내역 모두 '생활용품'으로 저장하기</span>
+                                    <button class="btn btn-sm btn-outline" onclick="applyBulkAction('gs25')">적용</button>
+                                </div>
+                                <div class="quick-option">
+                                    <span class="option-text">3,500원 이하는 모두 확인</span>
+                                    <button class="btn btn-sm btn-outline" onclick="applyBulkAction('amount')">적용</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 전체 처리 버튼 -->
+                        <div class="bulk-actions">
+                            <button class="btn btn-lg btn-primary btn-full" onclick="confirmAllRemaining()">
+                                남은 내역 모두 확인하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4단계: 완료 -->
+                <div class="completion-section" id="completionSection" style="display: none;">
+                    <div class="completion-container">
+                        <!-- 성공 메시지 -->
+                        <div class="success-header">
+                            <div class="success-icon">🎉</div>
+                            <h2 class="success-title">업로드 완료!</h2>
+                            <p class="success-description">엑셀 데이터가 성공적으로 머니챗에 추가되었어요.</p>
+                        </div>
+
+                        <!-- 처리 결과 요약 -->
+                        <div class="completion-summary">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">처리 결과</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="summary-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-number">156</div>
+                                            <div class="stat-label">총 처리</div>
+                                        </div>
+                                        <div class="stat-item success">
+                                            <div class="stat-number">142</div>
+                                            <div class="stat-label">확인</div>
+                                        </div>
+                                        <div class="stat-item warning">
+                                            <div class="stat-number">12</div>
+                                            <div class="stat-label">수정</div>
+                                        </div>
+                                        <div class="stat-item error">
+                                            <div class="stat-number">2</div>
+                                            <div class="stat-label">삭제</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 자동 생성된 리포트 -->
+                        <div class="auto-report">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">📊 7월 지출 요약</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="report-summary">
+                                        <div class="total-amount">
+                                            <div class="amount-label">총 지출</div>
+                                            <div class="amount-value text-expense">987,650원</div>
+                                        </div>
+                                        
+                                        <div class="category-breakdown">
+                                            <div class="category-item">
+                                                <span class="category-rank">1.</span>
+                                                <span class="category-name">식비</span>
+                                                <span class="category-amount">385,000원</span>
+                                                <span class="category-percentage">(39%)</span>
+                                            </div>
+                                            <div class="category-item">
+                                                <span class="category-rank">2.</span>
+                                                <span class="category-name">교통비</span>
+                                                <span class="category-amount">156,000원</span>
+                                                <span class="category-percentage">(16%)</span>
+                                            </div>
+                                            <div class="category-item">
+                                                <span class="category-rank">3.</span>
+                                                <span class="category-name">쇼핑</span>
+                                                <span class="category-amount">123,500원</span>
+                                                <span class="category-percentage">(13%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="report-actions">
+                                        <button class="btn btn-outline btn-sm">상세 리포트 보기 →</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 다음 단계 액션 -->
+                        <div class="next-actions">
+                            <div class="actions-grid">
+                                <button class="btn btn-primary btn-lg" onclick="goToDashboard()">
+                                    <span class="btn-icon">🏠</span>
+                                    <span class="btn-text">홈으로 가기</span>
+                                </button>
+                                <button class="btn btn-outline btn-lg" onclick="goToChat()">
+                                    <span class="btn-icon">💬</span>
+                                    <span class="btn-text">채팅하러 가기</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <ul class="bottom-nav-list">
+            <li class="bottom-nav-item">
+                <a href="dashboard.html" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="chat.html" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">💬</span>
+                    <span>채팅</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">📝</span>
+                    <span>내역</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link active">
+                    <span class="bottom-nav-icon">📊</span>
+                    <span>리포트</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 사이드바 백드롭 (모바일) -->
+    <div class="sidebar-backdrop"></div>
+
+    <script src="../js/excel-upload.js"></script>
+</body>
+</html>

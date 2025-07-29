@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>머니챗 - 홈</title>
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <!-- 메인 앱 컨테이너 -->
+    <div class="app">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <!-- 사이드바 헤더 -->
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">💬</div>
+                    <div class="sidebar-logo-text">머니챗</div>
+                </a>
+            </div>
+
+            <!-- 사이드바 네비게이션 -->
+            <nav class="sidebar-nav">
+                <ul class="sidebar-nav-list">
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link active">
+                            <span class="sidebar-nav-icon">🏠</span>
+                            <span class="sidebar-nav-text">홈</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">💬</span>
+                            <span class="sidebar-nav-text">채팅</span>
+                            <span class="sidebar-nav-badge">3</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📊</span>
+                            <span class="sidebar-nav-text">엑셀 업로드</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📝</span>
+                            <span class="sidebar-nav-text">내역 관리</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📈</span>
+                            <span class="sidebar-nav-text">리포트</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            <span class="sidebar-nav-text">설정</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- 사이드바 푸터 -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">김</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">김머니님</div>
+                        <div class="sidebar-user-email">money@example.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 메인 헤더 -->
+            <header class="main-header">
+                <div class="main-header-left">
+                    <button class="sidebar-toggle">☰</button>
+                    <div>
+                        <h1 class="main-header-title">대시보드</h1>
+                        <p class="main-header-subtitle">오늘도 현명한 소비하세요!</p>
+                    </div>
+                </div>
+                <div class="main-header-right">
+                    <button class="header-action-btn" title="알림">🔔</button>
+                    <button class="header-action-btn" title="프로필">👤</button>
+                </div>
+            </header>
+
+            <!-- 메인 바디 -->
+            <div class="main-body">
+                <!-- 웰컴 메시지 -->
+                <div class="welcome-message">
+                    <div class="welcome-content">
+                        <h2 class="welcome-title">안녕하세요, 김머니님! 👋</h2>
+                        <p class="welcome-subtitle">7월 지출이 지난달보다 15% 줄었어요</p>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="btn btn-primary">💬 채팅으로 입력</button>
+                        <button class="btn btn-outline">📊 엑셀 업로드</button>
+                    </div>
+                </div>
+
+                <!-- 메인 컨텐츠 그리드 -->
+                <div class="content-grid content-grid-2">
+                    <!-- 이번 달 요약 카드 -->
+                    <div class="summary-card">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">이번 달 요약 (7월)</h3>
+                                <span class="badge badge-success">예산 내</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="summary-amount">
+                                    <div class="amount-item">
+                                        <div class="amount-label">총 지출</div>
+                                        <div class="amount-value text-expense">1,234,500원</div>
+                                    </div>
+                                    <div class="amount-item">
+                                        <div class="amount-label">남은 예산</div>
+                                        <div class="amount-value text-asset">765,500원</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="budget-progress">
+                                    <div class="progress-text">
+                                        <span>예산 사용률</span>
+                                        <span>62%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 62%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="category-breakdown">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-icon">🍽️</span>
+                                        <span class="breakdown-label">식비</span>
+                                        <span class="breakdown-amount">468,000원</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-icon">🚇</span>
+                                        <span class="breakdown-label">교통비</span>
+                                        <span class="breakdown-amount">185,000원</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-icon">🛒</span>
+                                        <span class="breakdown-label">생활용품</span>
+                                        <span class="breakdown-amount">247,000원</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 빠른 액션 카드 -->
+                    <div class="quick-actions">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">빠른 입력</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="action-grid">
+                                    <button class="action-button">
+                                        <span class="action-icon">💬</span>
+                                        <span class="action-text">채팅으로 입력</span>
+                                    </button>
+                                    <button class="action-button">
+                                        <span class="action-icon">📊</span>
+                                        <span class="action-text">엑셀 업로드</span>
+                                    </button>
+                                    <button class="action-button">
+                                        <span class="action-icon">✏️</span>
+                                        <span class="action-text">수동 입력</span>
+                                    </button>
+                                    <button class="action-button">
+                                        <span class="action-icon">📱</span>
+                                        <span class="action-text">영수증 촬영</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최근 활동 섹션 -->
+                <div class="recent-section">
+                    <div class="section-header">
+                        <h3 class="section-title">최근 대화</h3>
+                        <a href="#" class="section-link">전체 보기 →</a>
+                    </div>
+                    
+                    <div class="recent-chats">
+                        <div class="chat-item card-clickable">
+                            <div class="chat-content">
+                                <div class="chat-message-preview">"점심에 삼겹살 15,000원 썼어"</div>
+                                <div class="chat-meta">
+                                    <span class="chat-time">오늘 오후 2:30</span>
+                                    <span class="chat-status text-success">✓ 저장됨</span>
+                                </div>
+                            </div>
+                            <div class="chat-amount text-expense">-15,000원</div>
+                        </div>
+
+                        <div class="chat-item card-clickable">
+                            <div class="chat-content">
+                                <div class="chat-message-preview">"스벅에서 아이스 아메리카노 4,500원"</div>
+                                <div class="chat-meta">
+                                    <span class="chat-time">어제 오후 3:15</span>
+                                    <span class="chat-status text-success">✓ 저장됨</span>
+                                </div>
+                            </div>
+                            <div class="chat-amount text-expense">-4,500원</div>
+                        </div>
+
+                        <div class="chat-item card-clickable">
+                            <div class="chat-content">
+                                <div class="chat-message-preview">"지하철 교통비 1,400원"</div>
+                                <div class="chat-meta">
+                                    <span class="chat-time">어제 오전 9:00</span>
+                                    <span class="chat-status text-success">✓ 저장됨</span>
+                                </div>
+                            </div>
+                            <div class="chat-amount text-expense">-1,400원</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 주간 트렌드 차트 섹션 -->
+                <div class="trend-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">주간 지출 트렌드</h3>
+                            <div class="chart-legend">
+                                <span class="legend-item">
+                                    <span class="legend-color" style="background-color: var(--primary-green)"></span>
+                                    이번 주
+                                </span>
+                                <span class="legend-item">
+                                    <span class="legend-color" style="background-color: var(--border-medium)"></span>
+                                    지난 주
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="simple-chart">
+                                <div class="chart-bars">
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 60%"></div>
+                                            <div class="bar previous" style="height: 80%"></div>
+                                        </div>
+                                        <div class="chart-label">월</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 45%"></div>
+                                            <div class="bar previous" style="height: 65%"></div>
+                                        </div>
+                                        <div class="chart-label">화</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 70%"></div>
+                                            <div class="bar previous" style="height: 55%"></div>
+                                        </div>
+                                        <div class="chart-label">수</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 35%"></div>
+                                            <div class="bar previous" style="height: 90%"></div>
+                                        </div>
+                                        <div class="chart-label">목</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 85%"></div>
+                                            <div class="bar previous" style="height: 70%"></div>
+                                        </div>
+                                        <div class="chart-label">금</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 25%"></div>
+                                            <div class="bar previous" style="height: 40%"></div>
+                                        </div>
+                                        <div class="chart-label">토</div>
+                                    </div>
+                                    <div class="chart-day">
+                                        <div class="chart-bar">
+                                            <div class="bar current" style="height: 30%"></div>
+                                            <div class="bar previous" style="height: 35%"></div>
+                                        </div>
+                                        <div class="chart-label">일</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 플로팅 액션 버튼 -->
+    <button class="fab" title="빠른 입력">💬</button>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <ul class="bottom-nav-list">
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link active">
+                    <span class="bottom-nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">💬</span>
+                    <span>채팅</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">📝</span>
+                    <span>내역</span>
+                </a>
+            </li>
+            <li class="bottom-nav-item">
+                <a href="#" class="bottom-nav-link">
+                    <span class="bottom-nav-icon">📊</span>
+                    <span>리포트</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 사이드바 백드롭 (모바일) -->
+    <div class="sidebar-backdrop"></div>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>

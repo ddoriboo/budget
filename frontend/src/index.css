@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 스타일 */
+@layer base {
+  html {
+    font-family: 'Noto Sans KR', 'Noto Sans', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    line-height: 1.6;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+/* 컴포넌트 스타일 */
+@layer components {
+  /* 버튼 스타일 */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-600 focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-red-600 focus:ring-red-500;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+
+  /* 입력 필드 스타일 */
+  .input {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors;
+  }
+
+  .input-error {
+    @apply border-danger focus:ring-red-500;
+  }
+
+  /* 카드 스타일 */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
+  }
+
+  /* 채팅 버블 스타일 */
+  .chat-bubble {
+    @apply max-w-xs lg:max-w-md px-4 py-2 rounded-2xl;
+  }
+
+  .chat-bubble-user {
+    @apply chat-bubble bg-primary text-white ml-auto;
+  }
+
+  .chat-bubble-ai {
+    @apply chat-bubble bg-white border border-gray-200 mr-auto;
+  }
+
+  /* 로딩 애니메이션 */
+  .loading-dots {
+    @apply flex space-x-1;
+  }
+
+  .loading-dots > div {
+    @apply w-2 h-2 bg-gray-400 rounded-full animate-ping;
+    animation-delay: calc(var(--i) * 0.2s);
+  }
+
+  /* 그라디언트 */
+  .gradient-primary {
+    background: linear-gradient(135deg, #03C75A 0%, #039F48 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, #4A4A4A 0%, #333333 100%);
+  }
+}
+
+/* 유틸리티 클래스 */
+@layer utilities {
+  /* 텍스트 스타일 */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent;
+  }
+
+  /* 애니메이션 */
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s infinite;
+  }
+
+  /* 반응형 그리드 */
+  .grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  /* 모바일 전용 숨김 */
+  .mobile-hidden {
+    @apply hidden md:block;
+  }
+
+  /* 데스크톱 전용 숨김 */
+  .desktop-hidden {
+    @apply block md:hidden;
+  }
+
+  /* 터치 친화적 크기 */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+/* 다크 모드 지원 (추후 구현) */
+@media (prefers-color-scheme: dark) {
+  /* 다크 모드 스타일 */
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,360 @@
+/* 
+===========================================
+머니챗(MoneyChat) 디자인 시스템
+네이버 가계부 스타일 기반
+===========================================
+*/
+
+/* ==================== 
+   1. CSS 변수 정의 (컬러 시스템)
+   ==================== */
+:root {
+  /* Primary Colors */
+  --primary-green: #03C75A;        /* 네이버 그린 */
+  --primary-green-hover: #02B050;   /* 호버 상태 */
+  --primary-green-light: #E8F7F0;   /* 연한 배경용 */
+  --primary-green-dark: #02A047;    /* 진한 상태 */
+
+  /* Sidebar Colors */
+  --sidebar-bg: #4A4A4A;           /* 다크 사이드바 */
+  --sidebar-hover: #5A5A5A;        /* 사이드바 호버 */
+  --sidebar-active: #03C75A;       /* 사이드바 활성 상태 */
+  --sidebar-text: #FFFFFF;         /* 사이드바 텍스트 */
+  --sidebar-text-inactive: #CCCCCC; /* 비활성 텍스트 */
+
+  /* Background Colors */
+  --bg-primary: #F7F7F7;           /* 메인 배경 */
+  --bg-white: #FFFFFF;             /* 카드 배경 */
+  --bg-light-gray: #FAFAFA;        /* 연한 회색 배경 */
+  --bg-dark-gray: #F0F0F0;         /* 진한 회색 배경 */
+
+  /* Text Colors */
+  --text-primary: #333333;         /* 주요 텍스트 */
+  --text-secondary: #666666;       /* 보조 텍스트 */
+  --text-tertiary: #999999;        /* 삼차 텍스트 */
+  --text-white: #FFFFFF;           /* 흰색 텍스트 */
+
+  /* Transaction Colors */
+  --income-color: #0066CC;         /* 수입 */
+  --expense-color: #FF4444;        /* 지출 */
+  --asset-color: #03C75A;          /* 자산 */
+  --debt-color: #FF6600;           /* 부채 */
+
+  /* Status Colors */
+  --success-color: #28A745;        /* 성공 */
+  --warning-color: #FFC107;        /* 경고 */
+  --error-color: #DC3545;          /* 에러 */
+  --info-color: #17A2B8;           /* 정보 */
+
+  /* Border Colors */
+  --border-light: #E0E0E0;         /* 연한 보더 */
+  --border-medium: #CCCCCC;        /* 중간 보더 */
+  --border-dark: #999999;          /* 진한 보더 */
+
+  /* Shadow */
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+  /* ==================== 
+     2. 타이포그래피 시스템
+     ==================== */
+  /* Font Family */
+  --font-family: "Noto Sans", "Malgun Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Font Sizes */
+  --font-size-xs: 10px;           /* 매우 작은 텍스트 */
+  --font-size-sm: 12px;           /* 보조 텍스트 */
+  --font-size-base: 14px;         /* 기본 본문 */
+  --font-size-lg: 16px;           /* 큰 본문 */
+  --font-size-xl: 18px;           /* 제목 */
+  --font-size-2xl: 20px;          /* 큰 제목 */
+  --font-size-3xl: 24px;          /* 섹션 제목 */
+  --font-size-4xl: 32px;          /* 페이지 제목 */
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.6;
+
+  /* ==================== 
+     3. 간격 시스템 (8px 기반)
+     ==================== */
+  --spacing-xs: 4px;              /* 0.5 * 8px */
+  --spacing-sm: 8px;              /* 1 * 8px */
+  --spacing-md: 16px;             /* 2 * 8px */
+  --spacing-lg: 24px;             /* 3 * 8px */
+  --spacing-xl: 32px;             /* 4 * 8px */
+  --spacing-2xl: 40px;            /* 5 * 8px */
+  --spacing-3xl: 48px;            /* 6 * 8px */
+
+  /* ==================== 
+     4. Border Radius
+     ==================== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 50%;
+
+  /* ==================== 
+     5. Z-index 레이어
+     ==================== */
+  --z-dropdown: 1000;
+  --z-sticky: 1010;
+  --z-fixed: 1020;
+  --z-modal-backdrop: 1030;
+  --z-modal: 1040;
+  --z-popover: 1050;
+  --z-tooltip: 1060;
+  --z-toast: 1070;
+
+  /* ==================== 
+     6. 트랜지션
+     ==================== */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}
+
+/* ==================== 
+   7. 기본 스타일 초기화
+   ==================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== 
+   8. 타이포그래피 클래스
+   ==================== */
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-base { font-size: var(--font-size-base); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
+.text-3xl { font-size: var(--font-size-3xl); }
+.text-4xl { font-size: var(--font-size-4xl); }
+
+.font-light { font-weight: var(--font-weight-light); }
+.font-regular { font-weight: var(--font-weight-regular); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-white { color: var(--text-white); }
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-error { color: var(--error-color); }
+.text-info { color: var(--info-color); }
+
+/* 거래 관련 색상 */
+.text-income { color: var(--income-color); }
+.text-expense { color: var(--expense-color); }
+.text-asset { color: var(--asset-color); }
+.text-debt { color: var(--debt-color); }
+
+/* ==================== 
+   9. 간격 유틸리티 클래스
+   ==================== */
+.m-xs { margin: var(--spacing-xs); }
+.m-sm { margin: var(--spacing-sm); }
+.m-md { margin: var(--spacing-md); }
+.m-lg { margin: var(--spacing-lg); }
+.m-xl { margin: var(--spacing-xl); }
+
+.p-xs { padding: var(--spacing-xs); }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+
+/* Margin Top */
+.mt-xs { margin-top: var(--spacing-xs); }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mt-xl { margin-top: var(--spacing-xl); }
+
+/* Padding Top */
+.pt-xs { padding-top: var(--spacing-xs); }
+.pt-sm { padding-top: var(--spacing-sm); }
+.pt-md { padding-top: var(--spacing-md); }
+.pt-lg { padding-top: var(--spacing-lg); }
+.pt-xl { padding-top: var(--spacing-xl); }
+
+/* ==================== 
+   10. 공통 레이아웃 클래스
+   ==================== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+
+.hidden {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==================== 
+   11. 기본 엘리먼트 스타일
+   ==================== */
+a {
+  color: var(--primary-green);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-green-hover);
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+/* ==================== 
+   12. 아이콘 시스템 기본 스타일
+   ==================== */
+.icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  text-align: center;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-lg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-xl {
+  width: 32px;
+  height: 32px;
+}
+
+/* ==================== 
+   13. 접근성 관련 스타일
+   ==================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  :root {
+    --border-light: #000000;
+    --border-medium: #000000;
+    --text-secondary: #000000;
+  }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-white: #2d2d2d;
+    --bg-light-gray: #242424;
+    --bg-dark-gray: #333333;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-tertiary: #999999;
+    
+    --border-light: #444444;
+    --border-medium: #666666;
+    --border-dark: #888888;
+    
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}

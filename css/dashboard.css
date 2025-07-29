@@ -1,0 +1,525 @@
+/* 
+===========================================
+머니챗(MoneyChat) 대시보드 화면 스타일
+===========================================
+*/
+
+/* ==================== 
+   1. 웰컴 메시지 섹션
+   ==================== */
+
+.welcome-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--primary-green) 0%, #02B050 100%);
+  color: var(--text-white);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-medium);
+}
+
+.welcome-content {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--text-white);
+}
+
+.welcome-subtitle {
+  font-size: var(--font-size-base);
+  margin: 0;
+  opacity: 0.9;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.welcome-actions .btn {
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.welcome-actions .btn-outline {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-white);
+}
+
+.welcome-actions .btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 모바일에서 웰컴 메시지 스택 레이아웃 */
+@media (max-width: 768px) {
+  .welcome-message {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-md);
+  }
+
+  .welcome-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .welcome-actions .btn {
+    flex: 1;
+    max-width: 140px;
+  }
+}
+
+/* ==================== 
+   2. 요약 카드
+   ==================== */
+
+.summary-card .card {
+  height: 100%;
+}
+
+.summary-amount {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.amount-item {
+  text-align: center;
+  flex: 1;
+}
+
+.amount-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.amount-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.budget-progress {
+  margin-bottom: var(--spacing-lg);
+}
+
+.category-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.breakdown-icon {
+  font-size: var(--font-size-lg);
+  width: 24px;
+  text-align: center;
+}
+
+.breakdown-label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.breakdown-amount {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+/* ==================== 
+   3. 빠른 액션 카드
+   ==================== */
+
+.quick-actions .card {
+  height: 100%;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg) var(--spacing-md);
+  background-color: var(--bg-light-gray);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  color: var(--text-primary);
+  min-height: 80px;
+}
+
+.action-button:hover {
+  background-color: var(--primary-green-light);
+  border-color: var(--primary-green);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.action-icon {
+  font-size: var(--font-size-2xl);
+}
+
+.action-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+/* 모바일에서 액션 그리드 조정 */
+@media (max-width: 480px) {
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-button {
+    flex-direction: row;
+    text-align: left;
+    min-height: 60px;
+  }
+  
+  .action-icon {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* ==================== 
+   4. 최근 대화 섹션
+   ==================== */
+
+.recent-section {
+  margin-top: var(--spacing-lg);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.section-link {
+  font-size: var(--font-size-sm);
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+}
+
+.section-link:hover {
+  text-decoration: underline;
+}
+
+.recent-chats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: var(--bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-light);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.chat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-message-preview {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.chat-time {
+  color: var(--text-tertiary);
+}
+
+.chat-status {
+  font-weight: var(--font-weight-medium);
+}
+
+.chat-amount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  margin-left: var(--spacing-md);
+}
+
+/* ==================== 
+   5. 트렌드 차트 섹션
+   ==================== */
+
+.trend-section {
+  margin-top: var(--spacing-lg);
+}
+
+.chart-legend {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.simple-chart {
+  padding: var(--spacing-md) 0;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  gap: var(--spacing-xs);
+}
+
+.chart-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.chart-bar {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+}
+
+.bar {
+  width: 14px;
+  min-height: 4px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: all var(--transition-normal);
+}
+
+.bar.current {
+  background-color: var(--primary-green);
+}
+
+.bar.previous {
+  background-color: var(--border-medium);
+  opacity: 0.6;
+}
+
+.chart-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 차트 호버 효과 */
+.chart-day:hover .bar {
+  transform: scaleY(1.05);
+}
+
+/* 모바일에서 차트 조정 */
+@media (max-width: 768px) {
+  .chart-bars {
+    height: 150px;
+    gap: 2px;
+  }
+  
+  .chart-bar {
+    height: 130px;
+    gap: 2px;
+  }
+  
+  .bar {
+    width: 10px;
+  }
+  
+  .chart-legend {
+    justify-content: center;
+    gap: var(--spacing-lg);
+  }
+}
+
+/* ==================== 
+   6. 반응형 조정
+   ==================== */
+
+/* 태블릿 레이아웃 */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .welcome-message {
+    padding: var(--spacing-lg);
+  }
+  
+  .welcome-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .amount-value {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* 모바일 레이아웃 */
+@media (max-width: 768px) {
+  .content-grid-2 {
+    gap: var(--spacing-md);
+  }
+  
+  .summary-amount {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .amount-value {
+    font-size: var(--font-size-lg);
+  }
+  
+  .breakdown-item {
+    padding: var(--spacing-sm) 0;
+  }
+  
+  .chat-item {
+    padding: var(--spacing-sm);
+  }
+  
+  .chat-amount {
+    font-size: var(--font-size-base);
+    margin-left: var(--spacing-sm);
+  }
+}
+
+/* ==================== 
+   7. 애니메이션 효과
+   ==================== */
+
+/* 카드 등장 애니메이션 */
+.card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 프로그레스 바 애니메이션 */
+.progress-bar {
+  animation: progressFill 1.5s ease-out 0.5s both;
+}
+
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+}
+
+/* 차트 바 애니메이션 */
+.bar {
+  animation: barGrow 1s ease-out;
+  animation-fill-mode: both;
+}
+
+.chart-day:nth-child(1) .bar { animation-delay: 0.1s; }
+.chart-day:nth-child(2) .bar { animation-delay: 0.2s; }
+.chart-day:nth-child(3) .bar { animation-delay: 0.3s; }
+.chart-day:nth-child(4) .bar { animation-delay: 0.4s; }
+.chart-day:nth-child(5) .bar { animation-delay: 0.5s; }
+.chart-day:nth-child(6) .bar { animation-delay: 0.6s; }
+.chart-day:nth-child(7) .bar { animation-delay: 0.7s; }
+
+@keyframes barGrow {
+  from {
+    height: 0;
+  }
+}
+
+/* 웹 접근성을 위한 애니메이션 비활성화 */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .progress-bar,
+  .bar {
+    animation: none;
+  }
+}

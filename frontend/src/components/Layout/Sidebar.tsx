@@ -21,7 +21,7 @@ export const Sidebar = () => {
   const [stats, setStats] = useState({
     totalAmount: 0,
     totalExpenses: 0,
-    monthlyIncome: 3000000, // 임시 고정값 (향후 백엔드에서 관리)
+    monthlyIncome: 0, // 사용자 설정 가능한 값으로 변경 예정
   });
 
   useEffect(() => {

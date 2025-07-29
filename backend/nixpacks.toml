@@ -2,10 +2,10 @@
 nixPkgs = ['nodejs-18_x', 'npm-9_x']
 
 [phases.install]
-cmds = ['npm ci --only=production']
-
-[phases.build]
-cmds = ['npm run build']
+cmds = [
+  'npm install --production=false',
+  'npm run build'
+]
 
 [phases.start]
 cmd = 'npm run start:prod'

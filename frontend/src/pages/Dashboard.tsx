@@ -7,6 +7,7 @@ export const Dashboard = () => {
   const [stats, setStats] = useState({
     totalExpenses: 0,
     totalAmount: 0,
+    totalIncome: 0,
     categoryStats: {} as Record<string, number>,
     recentExpenses: [] as any[],
   });
@@ -78,8 +79,8 @@ export const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">이번 달 수입</p>
-              <p className="text-2xl font-bold text-primary">₩3,000,000</p>
-              <p className="text-sm text-gray-500 mt-1">지난 달 대비 +5%</p>
+              <p className="text-2xl font-bold text-primary">₩{stats.totalIncome.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 mt-1">수입 기록</p>
             </div>
             <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
               <span className="text-primary text-2xl">📈</span>
@@ -91,8 +92,12 @@ export const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">잔액</p>
-              <p className="text-2xl font-bold text-primary">₩1,765,433</p>
-              <p className="text-sm text-gray-500 mt-1">목표까지 234,567원</p>
+              <p className={`text-2xl font-bold ${stats.totalIncome - stats.totalAmount >= 0 ? 'text-primary' : 'text-red-500'}`}>
+                ₩{(stats.totalIncome - stats.totalAmount).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {stats.totalIncome - stats.totalAmount >= 0 ? '흑자' : '적자'}
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <span className="text-blue-600 text-2xl">💰</span>

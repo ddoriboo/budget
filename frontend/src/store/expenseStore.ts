@@ -12,6 +12,7 @@ export interface ExpenseItem {
   place: string;
   memo?: string;
   confidence: number;
+  type: 'expense' | 'income';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -218,8 +219,14 @@ class ExpenseStore {
     const expenses = this.getExpenses();
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
     
-    const thisMonthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-    const totalAmount = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const thisMonthTransactions = expenses.filter(e => e.date.startsWith(currentMonth));
+    
+    // 지출과 수입 분리 계산
+    const thisMonthExpenses = thisMonthTransactions.filter(e => e.type === 'expense' || !e.type);
+    const thisMonthIncome = thisMonthTransactions.filter(e => e.type === 'income');
+    
+    const totalExpenseAmount = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalIncomeAmount = thisMonthIncome.reduce((sum, e) => sum + e.amount, 0);
     
     const categoryStats = thisMonthExpenses.reduce((acc, expense) => {
       acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
@@ -228,7 +235,8 @@ class ExpenseStore {
 
     return {
       totalExpenses: thisMonthExpenses.length,
-      totalAmount,
+      totalAmount: totalExpenseAmount,
+      totalIncome: totalIncomeAmount,
       categoryStats,
       recentExpenses: expenses.slice(0, 5),
     };

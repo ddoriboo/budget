@@ -21,17 +21,17 @@ export const Sidebar = () => {
   const [stats, setStats] = useState({
     totalAmount: 0,
     totalExpenses: 0,
-    monthlyIncome: 0, // 사용자 설정 가능한 값으로 변경 예정
+    monthlyIncome: 0,
   });
 
   useEffect(() => {
     const updateStats = () => {
       const expenseStats = expenseStore.getExpenseStats();
-      setStats(prev => ({
-        ...prev,
+      setStats({
         totalAmount: expenseStats.totalAmount,
         totalExpenses: expenseStats.totalExpenses,
-      }));
+        monthlyIncome: expenseStats.totalIncome || 0,
+      });
     };
 
     updateStats();

@@ -9,6 +9,7 @@ interface ExpenseData {
   place: string;
   memo?: string;
   confidence: number;
+  type: 'expense' | 'income';
 }
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
@@ -69,19 +70,30 @@ export const analyzeExpenseMessage = async (
 
 사용자의 자연어 입력에서 다음 정보를 정확히 추출하세요:
 
-1. **날짜**: 상대적 표현('어제', '그저께', '3일 전' 등)을 정확한 날짜로 변환
-2. **금액**: 숫자와 단위 인식 ('5천원', '만원', '50000원' 등)
-3. **카테고리**: 내용을 기반으로 적절한 카테고리 추론
-4. **장소/상점**: 구체적인 장소명이나 상점명
-5. **메모**: 추가 정보나 상황 설명
+1. **거래 유형**: 수입(income)인지 지출(expense)인지 구분
+2. **날짜**: 상대적 표현('어제', '그저께', '3일 전' 등)을 정확한 날짜로 변환
+3. **금액**: 숫자와 단위 인식 ('5천원', '만원', '50000원' 등)
+4. **카테고리**: 내용을 기반으로 적절한 카테고리 추론
+5. **장소/상점**: 구체적인 장소명이나 상점명
+6. **메모**: 추가 정보나 상황 설명
 
-**카테고리 기준:**
+**거래 유형 구분:**
+- 수입(income): 월급, 급여, 보너스, 용돈, 부수입, 프리랜서 수입, 이자, 배당금 등
+- 지출(expense): 구매, 식사, 교통비, 쇼핑 등 돈을 쓴 경우
+
+**지출 카테고리:**
 - 식비: 음식, 카페, 레스토랑, 마트 등
 - 교통: 지하철, 버스, 택시, 주유 등
 - 문화/여가: 영화, 도서, 여행, 스포츠 등
 - 쇼핑: 의류, 생활용품, 화장품 등
 - 주거/통신: 관리비, 인터넷, 휴대폰 등
 - 건강/의료: 병원, 약국, 건강식품 등
+
+**수입 카테고리:**
+- 급여: 월급, 급여, 보너스
+- 부수입: 프리랜서, 아르바이트, 부업
+- 금융수입: 이자, 배당금, 투자수익
+- 기타수입: 용돈, 선물, 기타
 
 **오늘 날짜: ${getCurrentDate()}**
 
@@ -95,12 +107,13 @@ export const analyzeExpenseMessage = async (
   "expenses": [
     {
       "date": "YYYY-MM-DD",
-      "amount": 숫자,
+      "amount": 숫자 (항상 양수로 표기),
       "category": "카테고리",
       "subcategory": "하위카테고리",
       "place": "장소명",
       "memo": "메모",
-      "confidence": 0.0-1.0
+      "confidence": 0.0-1.0,
+      "type": "expense" 또는 "income"
     }
   ],
   "clarification_needed": false,
@@ -108,7 +121,8 @@ export const analyzeExpenseMessage = async (
 }
 
 **특별 지시:**
-- 한 문장에 여러 지출이 있으면 각각 분리
+- amount는 항상 양수로 표기 (수입/지출은 type으로 구분)
+- 한 문장에 여러 거래가 있으면 각각 분리
 - 확실하지 않은 정보는 confidence를 낮게 설정
 - 금액이 명확하지 않으면 clarification_needed를 true로 설정
 `;

@@ -62,10 +62,13 @@ export const Chat = () => {
       if (analysisResult.success && analysisResult.expenses.length > 0) {
         const expense = analysisResult.expenses[0]; // 첫 번째 지출 항목 사용
 
+        const isIncome = expense.type === 'income';
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: `"${currentInput}"를 분석했어요! 혹시 이 내용이 맞나요?`,
+          content: isIncome 
+            ? `"${currentInput}"를 분석했어요! 수입 내역이 맞나요?`
+            : `"${currentInput}"를 분석했어요! 혹시 이 내용이 맞나요?`,
           timestamp: new Date(),
           data: {
             amount: expense.amount,
@@ -74,7 +77,8 @@ export const Chat = () => {
             place: expense.place,
             date: expense.date,
             confidence: expense.confidence,
-            memo: expense.memo
+            memo: expense.memo,
+            type: expense.type
           }
         };
         
@@ -140,13 +144,17 @@ export const Chat = () => {
       place: data.place,
       memo: data.memo,
       confidence: data.confidence,
+      type: data.type || 'expense',
     });
     
-    // 지출 확인 처리
+    // 지출/수입 확인 처리
+    const isIncome = data.type === 'income';
     const confirmMessage: Message = {
       id: Date.now().toString(),
       type: 'ai',
-      content: `✅ 지출 내역이 가계부에 저장되었습니다!\n\n${data.date} | ${data.place} | ${data.category} > ${data.subcategory} | ${data.amount.toLocaleString()}원`,
+      content: isIncome 
+        ? `✅ 수입 내역이 가계부에 저장되었습니다!\n\n${data.date} | ${data.place} | ${data.category} > ${data.subcategory} | +${data.amount.toLocaleString()}원`
+        : `✅ 지출 내역이 가계부에 저장되었습니다!\n\n${data.date} | ${data.place} | ${data.category} > ${data.subcategory} | -${data.amount.toLocaleString()}원`,
       timestamp: new Date(),
     };
     
@@ -224,7 +232,9 @@ export const Chat = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">금액:</span>
-                      <span className="font-medium text-red-600">-{message.data.amount.toLocaleString()}원</span>
+                      <span className={`font-medium ${message.data.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {message.data.type === 'income' ? '+' : '-'}{message.data.amount.toLocaleString()}원
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">신뢰도:</span>

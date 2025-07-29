@@ -222,8 +222,8 @@ export const Expenses = () => {
                       </span>
                       <div className="text-xs text-gray-500 mt-1">{expense.subcategory}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                      -₩{expense.amount.toLocaleString()}
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${expense.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      {expense.type === 'income' ? '+' : '-'}₩{expense.amount.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
                       {expense.memo || '-'}

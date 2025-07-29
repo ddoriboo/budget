@@ -11,7 +11,7 @@ interface ExpenseData {
   confidence: number;
 }
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
 
 const getCurrentDate = () => {
   return new Date().toISOString().split('T')[0];
@@ -52,6 +52,10 @@ export const analyzeExpenseMessage = async (message: string): Promise<{
   clarification_message?: string;
 }> => {
   try {
+    // API 키 확인
+    if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
+      throw new Error('OpenAI API 키가 설정되지 않았습니다.');
+    }
     const systemPrompt = `
 당신은 한국어 가계부 입력을 분석하는 전문 AI입니다.
 

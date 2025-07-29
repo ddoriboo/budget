@@ -3,7 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import { 
   DocumentArrowUpIcon, 
   CheckCircleIcon, 
-  XCircleIcon,
   ArrowPathIcon 
 } from '@heroicons/react/24/outline';
 
@@ -41,7 +40,7 @@ export const ExcelUpload = () => {
     },
   });
 
-  const processFile = async (file: File) => {
+  const processFile = async (_file: File) => {
     setIsProcessing(true);
     
     // 시뮬레이션된 파일 처리

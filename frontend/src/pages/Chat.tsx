@@ -93,7 +93,7 @@ export const Chat = () => {
     }
   };
 
-  const handleConfirmExpense = (messageId: string, data: any) => {
+  const handleConfirmExpense = (_messageId: string, data: any) => {
     // 지출 확인 처리
     const confirmMessage: Message = {
       id: Date.now().toString(),
@@ -110,7 +110,7 @@ export const Chat = () => {
     });
   };
 
-  const handleEditExpense = (messageId: string, data: any) => {
+  const handleEditExpense = (_messageId: string, _data: any) => {
     // 지출 수정 처리
     const editMessage: Message = {
       id: Date.now().toString(),

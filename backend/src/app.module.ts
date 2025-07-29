@@ -1,10 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { join } from 'path';
 
 // Modules
 import { AuthModule } from './modules/auth/auth.module';
@@ -59,33 +55,6 @@ import { ExcelUpload } from './entities/excel-upload.entity';
       inject: [ConfigService],
     }),
 
-    // GraphQL 설정
-    GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        sortSchema: true,
-        playground: configService.get('NODE_ENV') === 'development',
-        introspection: true,
-        context: ({ req, connection }) => {
-          return connection ? { req: connection.context } : { req };
-        },
-        subscriptions: {
-          'graphql-ws': true,
-          'subscriptions-transport-ws': true,
-        },
-      }),
-      inject: [ConfigService],
-    }),
-
-    // Rate Limiting
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 1분
-        limit: 100, // 요청 제한
-      },
-    ]),
 
     // Feature Modules
     HealthModule,

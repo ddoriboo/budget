@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
@@ -34,18 +33,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Swagger 설정
-  if (configService.get('NODE_ENV') !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('머니챗 API')
-      .setDescription('LLM 기반 대화형 가계부 웹 서비스 API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
-  }
 
   // 글로벌 prefix
   app.setGlobalPrefix('api');
@@ -54,7 +41,6 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 머니챗 API가 http://localhost:${port}에서 실행 중입니다.`);
-  console.log(`📚 API 문서: http://localhost:${port}/api`);
 }
 
 bootstrap();

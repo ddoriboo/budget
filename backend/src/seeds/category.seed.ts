@@ -154,7 +154,7 @@ export async function seedDefaultCategories(dataSource: DataSource): Promise<voi
       userId: null, // 시스템 카테고리는 userId가 null
     });
     
-    const savedParent = await categoryRepository.save(parentCategory);
+    const savedParent = await categoryRepository.save(parentCategory) as unknown as Category;
     console.log(`카테고리 생성: ${savedParent.name}`);
     
     // 자식 카테고리 생성
@@ -168,7 +168,7 @@ export async function seedDefaultCategories(dataSource: DataSource): Promise<voi
           isIncome: parentData.isIncome,
         });
         
-        const savedChild = await categoryRepository.save(childCategory);
+        const savedChild = await categoryRepository.save(childCategory) as unknown as Category;
         console.log(`  └─ 하위 카테고리 생성: ${savedChild.name}`);
       }
     }

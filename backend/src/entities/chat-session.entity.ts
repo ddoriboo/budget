@@ -21,6 +21,14 @@ export class ChatSession {
   @Column()
   userId: string;
 
+  @Field()
+  @Column({ length: 200, default: '새로운 대화' })
+  title: string;
+
+  @Field(() => String)
+  @Column({ type: 'jsonb', default: '[]' })
+  messages: Record<string, any>[];
+
   @Field(() => String)
   @Column({ type: 'jsonb', default: '{}' })
   context: Record<string, any>;
@@ -31,7 +39,7 @@ export class ChatSession {
 
   @Field()
   @UpdateDateColumn()
-  lastActivity: Date;
+  lastMessageAt: Date;
 
   @Field()
   @CreateDateColumn()

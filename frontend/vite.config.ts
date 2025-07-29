@@ -30,6 +30,7 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     allowedHosts: 'all',
+    strictPort: true,
   },
   build: {
     outDir: 'dist',

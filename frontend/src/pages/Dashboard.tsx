@@ -307,7 +307,6 @@ export const Dashboard = () => {
               dot={{ fill: '#03C75A', strokeWidth: 2, r: window.innerWidth < 640 ? 3 : 4 }}
               activeDot={{ r: window.innerWidth < 640 ? 5 : 6, fill: '#03C75A' }}
               animationDuration={1000}
-              animationDelay={200}
             />
           </LineChart>
         </MobileOptimizedChart>

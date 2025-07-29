@@ -3,7 +3,7 @@ import { ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MobileOptimizedChartProps {
-  children: React.ReactNode;
+  children: React.ReactElement;
   title: string;
   isLoading?: boolean;
   className?: string;

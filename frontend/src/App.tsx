@@ -3,7 +3,7 @@ import { Layout } from '@/components/Layout'
 import { Dashboard } from '@/pages/Dashboard'
 import { Chat } from '@/pages/Chat'
 import { ExcelUpload } from '@/pages/ExcelUpload'
-import { Reports } from '@/pages/Reports'
+import { Expenses } from '@/pages/Expenses'
 import { Settings } from '@/pages/Settings'
 import { AuthProvider } from '@/hooks/useAuth'
 
@@ -17,8 +17,8 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="chat" element={<Chat />} />
+            <Route path="expenses" element={<Expenses />} />
             <Route path="excel" element={<ExcelUpload />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           

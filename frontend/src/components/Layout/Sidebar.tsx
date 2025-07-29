@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { 
   HomeIcon, 
   ChatBubbleLeftRightIcon, 
@@ -6,16 +7,50 @@ import {
   ChartBarIcon,
   Cog6ToothIcon 
 } from '@heroicons/react/24/outline';
+import { expenseStore } from '@/store/expenseStore';
 
 const navigation = [
   { name: '대시보드', href: '/dashboard', icon: HomeIcon },
   { name: '대화하기', href: '/chat', icon: ChatBubbleLeftRightIcon },
+  { name: '지출 내역', href: '/expenses', icon: ChartBarIcon },
   { name: '엑셀 업로드', href: '/excel', icon: DocumentArrowUpIcon },
-  { name: '리포트', href: '/reports', icon: ChartBarIcon },
   { name: '설정', href: '/settings', icon: Cog6ToothIcon },
 ];
 
 export const Sidebar = () => {
+  const [stats, setStats] = useState({
+    totalAmount: 0,
+    totalExpenses: 0,
+    monthlyIncome: 3000000, // 임시 고정값 (향후 백엔드에서 관리)
+  });
+
+  useEffect(() => {
+    const updateStats = () => {
+      const expenseStats = expenseStore.getExpenseStats();
+      setStats(prev => ({
+        ...prev,
+        totalAmount: expenseStats.totalAmount,
+        totalExpenses: expenseStats.totalExpenses,
+      }));
+    };
+
+    updateStats();
+    
+    // localStorage 변경 감지 (다른 탭에서 데이터 변경 시)
+    const handleStorageChange = () => updateStats();
+    window.addEventListener('storage', handleStorageChange);
+    
+    // 컴포넌트 내에서 변경 감지를 위한 폴링 (개선 여지 있음)
+    const interval = setInterval(updateStats, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const balance = stats.monthlyIncome - stats.totalAmount;
+
   return (
     <div className="w-80 bg-gray-600 text-white flex flex-col">
       {/* 로고 */}
@@ -29,15 +64,22 @@ export const Sidebar = () => {
         <div className="space-y-4">
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-300">이번 달 지출</div>
-            <div className="text-2xl font-bold text-red-400">₩1,234,567</div>
+            <div className="text-2xl font-bold text-red-400">₩{stats.totalAmount.toLocaleString()}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.totalExpenses}건의 지출</div>
           </div>
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-300">이번 달 수입</div>
-            <div className="text-2xl font-bold text-primary-400">₩3,000,000</div>
+            <div className="text-2xl font-bold text-primary-400">₩{stats.monthlyIncome.toLocaleString()}</div>
+            <div className="text-xs text-gray-400 mt-1">고정 수입</div>
           </div>
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-300">잔액</div>
-            <div className="text-2xl font-bold text-primary-400">₩1,765,433</div>
+            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-primary-400' : 'text-red-400'}`}>
+              ₩{balance.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              {balance >= 0 ? '여유 자금' : '적자 상태'}
+            </div>
           </div>
         </div>
       </div>

@@ -187,6 +187,16 @@ export const analyzeExpenseMessage = async (
         clarification_message: '⚠️ OpenAI API 키가 설정되지 않았습니다. 관리자에게 문의하세요.',
       };
     }
+    // 현재 시점에서 실시간 날짜 계산
+    const today = getCurrentDate();
+    const yesterday = parseRelativeDate('어제');
+    const dayBeforeYesterday = parseRelativeDate('그저께');  
+    const threeDaysAgo = parseRelativeDate('그그저께');
+    const lastWeek = parseRelativeDate('지난주');
+    const thisWeekStart = parseRelativeDate('이번주');
+    const lastMonth = parseRelativeDate('지난달');
+    const thisMonth = parseRelativeDate('이번달');
+
     const systemPrompt = `
 당신은 한국어 가계부 입력을 분석하는 전문 AI입니다.
 
@@ -199,31 +209,39 @@ export const analyzeExpenseMessage = async (
 5. **장소/상점**: 구체적인 장소명이나 상점명
 6. **메모**: 추가 정보나 상황 설명
 
-**날짜 해석 규칙 (매우 중요! 절대 실수하지 말 것!):**
+**CRITICAL - 날짜 해석 규칙 (매우 중요! 절대 실수하지 말 것!):**
 
-**현재 기준일: ${getCurrentDate()}**
+**현재 기준일: ${today}**
 
-**상대적 날짜 변환:**
-- "오늘": ${getCurrentDate()}
-- "어제": ${parseRelativeDate('어제')}  
-- "그저께", "그제": ${parseRelativeDate('그저께')}
-- "그그저께": ${parseRelativeDate('그그저께')}
+**CRITICAL - 상대적 날짜 변환 (무조건 이 날짜들을 사용!):**
+- "오늘": ${today}
+- "어제": ${yesterday}  
+- "그저께", "그제": ${dayBeforeYesterday}
+- "그그저께": ${threeDaysAgo}
 
 **주 단위:**
-- "지난주", "저번주": ${parseRelativeDate('지난주')}
-- "이번주": ${parseRelativeDate('이번주')}
+- "지난주", "저번주": ${lastWeek}
+- "이번주": ${thisWeekStart}
 
 **월 단위:**
-- "지난달", "저번달": ${parseRelativeDate('지난달')}
-- "이번달": ${parseRelativeDate('이번달')}
+- "지난달", "저번달": ${lastMonth}
+- "이번달": ${thisMonth}
 
-**절대 규칙: 사용자가 "어제"라고 하면 무조건 ${parseRelativeDate('어제')}로 설정하세요.**
-**절대 규칙: 사용자가 "오늘이 아니라 어제"라고 하면 ${parseRelativeDate('어제')}로 수정하세요.**
+**절대 규칙: 사용자가 "어제"라고 하면 무조건 ${yesterday}로 설정하세요.**
+**절대 규칙: 사용자가 "오늘이 아니라 어제"라고 하면 ${yesterday}로 수정하세요.**
+**절대 규칙: 시간 감각이 매우 중요합니다. 위의 계산된 날짜를 정확히 사용하세요.**
+
+**CRITICAL - 날짜 계산 강제 규칙:**
+- "어제" = ${yesterday} (무조건 이 날짜)
+- "그저께" = ${dayBeforeYesterday} (무조건 이 날짜)
+- "지난주" = ${lastWeek} (무조건 이 날짜)
+- "지난달" = ${lastMonth} (무조건 이 날짜)
 
 **예시:**
-- "어제 스타벅스에서 5천원" → date: "${parseRelativeDate('어제')}"
-- "오늘이 아니라 어제 미용실에서 4만원" → date: "${parseRelativeDate('어제')}"
-- "그저께 마트에서 쇼핑" → date: "${parseRelativeDate('그저께')}"
+- "어제 스타벅스에서 5천원" → date: "${yesterday}"
+- "오늘이 아니라 어제 미용실에서 4만원" → date: "${yesterday}"
+- "그저께 마트에서 쇼핑" → date: "${dayBeforeYesterday}"
+- "지난주 화요일 점심" → date: (지난주 화요일 정확한 날짜 계산)
 
 **거래 유형 구분 (매우 중요! 놓치지 말 것!):**
 - 수입(income) 키워드: 월급, 급여, 보너스, 용돈, 부수입, 프리랜서, 이자, 배당금, "들어옴", "받았다", "입금", "월급", "수입", "받음", "용돈", "보너스"
@@ -279,13 +297,64 @@ ${analyzeConversationContext(message, conversationHistory)}
   "clarification_message": null
 }
 
-**특별 지시 (절대 위반 금지!):**
+**CRITICAL 특별 지시 (절대 위반 금지!):**
 - 반드시 expenses 배열에 최소 1개 항목을 포함할 것!
 - 오타나 불분명한 표현도 최대한 추론하여 처리할 것!
 - amount는 항상 양수로 표기 (수입/지출은 type으로 구분)
-- 한 문장에 여러 거래가 있으면 각각 분리
+- **한 문장에 여러 거래가 있으면 반드시 각각 분리하여 여러 객체로 생성**
+- **동일한 날짜에 여러 거래가 있어도 모두 별도 객체로 처리**
 - 확실하지 않은 정보는 confidence를 낮게 설정
 - 정말 이해할 수 없는 경우에만 clarification_needed를 true로 설정
+
+**복수 거래 처리 예시:**
+
+입력: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
+
+출력: {
+  "expenses": [
+    {
+      "date": "${yesterday}",
+      "amount": 20000,
+      "category": "식비",
+      "subcategory": "점심",
+      "place": "삼겹살집",
+      "memo": "점심 삼겹살",
+      "confidence": 0.9,
+      "type": "expense"
+    },
+    {
+      "date": "${yesterday}",
+      "amount": 5000,
+      "category": "식비",
+      "subcategory": "음료",
+      "place": "스타벅스",
+      "memo": "커피",
+      "confidence": 0.95,
+      "type": "expense"
+    },
+    {
+      "date": "${yesterday}",
+      "amount": 30000,
+      "category": "쇼핑",
+      "subcategory": "생필품",
+      "place": "이마트",
+      "memo": "장보기",
+      "confidence": 0.9,
+      "type": "expense"
+    },
+    {
+      "date": "${yesterday}",
+      "amount": 2000,
+      "category": "교통",
+      "subcategory": "대중교통",
+      "place": "지하철",
+      "memo": "지하철비",
+      "confidence": 0.95,
+      "type": "expense"
+    }
+  ],
+  "clarification_needed": false
+}
 
 **수정 요청 처리:**
 - "오늘이 아니라 어제" → 날짜를 어제로 수정
@@ -300,7 +369,7 @@ ${analyzeConversationContext(message, conversationHistory)}
 입력: "지단달 350만원 월급으로 들어옴" (오타 있음)
 출력: {
   "expenses": [{
-    "date": "2024-06-01",
+    "date": "${lastMonth}",
     "amount": 3500000,
     "category": "급여",
     "subcategory": "월급",
@@ -315,7 +384,7 @@ ${analyzeConversationContext(message, conversationHistory)}
 입력: "컵배 5천원"
 출력: {
   "expenses": [{
-    "date": "2024-07-29",
+    "date": "${today}",
     "amount": 5000,
     "category": "식비",
     "subcategory": "음료",
@@ -326,6 +395,18 @@ ${analyzeConversationContext(message, conversationHistory)}
   }],
   "clarification_needed": false
 }
+
+**시간 감각 테스트:**
+- 현재 날짜: ${today}
+- 어제: ${yesterday}
+- 그저께: ${dayBeforeYesterday}
+- 지난주: ${lastWeek}
+
+**절대적으로 중요한 규칙들:**
+1. 위의 날짜들을 정확히 사용할 것!
+2. 여러 거래는 반드시 분리할 것!
+3. 각 거래마다 별도의 객체를 생성할 것!
+4. 날짜 계산을 절대 틀리지 말 것!
 `;
 
     console.log('분석 요청:', message);

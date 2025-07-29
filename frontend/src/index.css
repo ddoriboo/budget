@@ -217,6 +217,30 @@
     @apply bg-red-50 border-red-200 text-red-800;
   }
 
+  /* 스켈레톤 로딩 애니메이션 */
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* 스크롤바 숨김 (모바일 스와이프 탭용) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* 모바일 최적화된 네비게이션 */
   .mobile-nav {
     @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 lg:hidden;

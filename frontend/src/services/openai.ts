@@ -139,24 +139,45 @@ export const analyzeExpenseMessage = async (
   "clarification_message": null
 }
 
-**특별 지시:**
+**특별 지시 (절대 위반 금지!):**
+- 반드시 expenses 배열에 최소 1개 항목을 포함할 것!
+- 오타나 불분명한 표현도 최대한 추론하여 처리할 것!
 - amount는 항상 양수로 표기 (수입/지출은 type으로 구분)
 - 한 문장에 여러 거래가 있으면 각각 분리
 - 확실하지 않은 정보는 confidence를 낮게 설정
-- 금액이 명확하지 않으면 clarification_needed를 true로 설정
+- 정말 이해할 수 없는 경우에만 clarification_needed를 true로 설정
+
+**오타 처리 규칙:**
+- "지단달" → "지난달"로 해석
+- "몇만원", "몇십만원" 등도 추론하여 처리
 
 **예시:**
-입력: "지난달 월급 350만원 들어옴"
+입력: "지단달 350만원 월급으로 들어옴" (오타 있음)
 출력: {
   "expenses": [{
-    "date": "지난달 1일 날짜",
+    "date": "2024-06-01",
     "amount": 3500000,
     "category": "급여",
     "subcategory": "월급",
     "place": "회사",
-    "memo": "월급",
-    "confidence": 0.95,
+    "memo": "월급 수입",
+    "confidence": 0.9,
     "type": "income"
+  }],
+  "clarification_needed": false
+}
+
+입력: "컵배 5천원"
+출력: {
+  "expenses": [{
+    "date": "2024-07-29",
+    "amount": 5000,
+    "category": "식비",
+    "subcategory": "음료",
+    "place": "카페",
+    "memo": "커피",
+    "confidence": 0.8,
+    "type": "expense"
   }],
   "clarification_needed": false
 }
@@ -192,9 +213,16 @@ export const analyzeExpenseMessage = async (
 
     const data = await response.json();
     console.log('OpenAI 응답:', data);
+    console.log('OpenAI 메시지 내용:', data.choices[0].message.content);
     
     const result = JSON.parse(data.choices[0].message.content);
     console.log('파싱된 결과:', result);
+    console.log('파싱된 결과 상세:', {
+      expenses: result.expenses,
+      expensesLength: result.expenses?.length,
+      clarificationNeeded: result.clarification_needed,
+      clarificationMessage: result.clarification_message
+    });
 
     // 날짜 정규화
     if (result.expenses) {

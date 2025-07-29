@@ -58,6 +58,14 @@ export const Chat = () => {
 
       // 실제 OpenAI API 호출 (컨텍스트 포함)
       const analysisResult = await analyzeExpenseMessage(currentInput, conversationHistory);
+      
+      console.log('분석 결과 상세:', {
+        success: analysisResult.success,
+        expensesLength: analysisResult.expenses?.length || 0,
+        expenses: analysisResult.expenses,
+        clarificationNeeded: analysisResult.clarification_needed,
+        clarificationMessage: analysisResult.clarification_message
+      });
 
       if (analysisResult.success && analysisResult.expenses.length > 0) {
         const expense = analysisResult.expenses[0]; // 첫 번째 지출 항목 사용

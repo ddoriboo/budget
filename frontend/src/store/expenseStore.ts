@@ -81,8 +81,31 @@ class ExpenseStore {
     };
   }
 
-  // 비용 데이터 관리 (localStorage 기반, API는 향후 마이그레이션)
-  getExpenses(): ExpenseItem[] {
+  // 비용 데이터 관리 (API 우선, localStorage 폴백)
+  async getExpenses(): Promise<ExpenseItem[]> {
+    return this.withFallback(
+      async () => {
+        const response = await expenseApi.getExpenses();
+        if (response.success && response.data) {
+          return response.data.expenses.map(expense => this.convertApiExpenseToLocal(expense));
+        }
+        throw new Error('API 응답 실패');
+      },
+      () => {
+        try {
+          const data = localStorage.getItem(EXPENSES_KEY);
+          return data ? JSON.parse(data) : [];
+        } catch (error) {
+          console.error('localStorage 데이터 로드 실패:', error);
+          return [];
+        }
+      },
+      '지출 목록 조회 실패'
+    );
+  }
+
+  // 동기 버전 (기존 호환성 유지)
+  getExpensesSync(): ExpenseItem[] {
     try {
       const data = localStorage.getItem(EXPENSES_KEY);
       return data ? JSON.parse(data) : [];
@@ -92,8 +115,41 @@ class ExpenseStore {
     }
   }
 
-  addExpense(expense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): ExpenseItem {
-    const expenses = this.getExpenses();
+  async addExpense(expense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<ExpenseItem> {
+    return this.withFallback(
+      async () => {
+        const apiExpense = this.convertLocalExpenseToApi(expense);
+        const response = await expenseApi.createExpense(apiExpense);
+        if (response.success && response.data) {
+          const createdExpense = this.convertApiExpenseToLocal(response.data);
+          // API 성공 시 localStorage에도 저장
+          const localExpenses = this.getExpensesSync();
+          localExpenses.push(createdExpense);
+          this.saveExpenses(localExpenses);
+          return createdExpense;
+        }
+        throw new Error('지출 생성 API 실패');
+      },
+      () => {
+        const expenses = this.getExpensesSync();
+        const newExpense: ExpenseItem = {
+          ...expense,
+          id: Date.now().toString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        expenses.push(newExpense);
+        this.saveExpenses(expenses);
+        return newExpense;
+      },
+      '지출 추가 실패'
+    );
+  }
+
+  // 동기 버전 (기존 호환성 유지)
+  addExpenseSync(expense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): ExpenseItem {
+    const expenses = this.getExpensesSync();
     const newExpense: ExpenseItem = {
       ...expense,
       id: Date.now().toString(),
@@ -106,8 +162,52 @@ class ExpenseStore {
     return newExpense;
   }
 
-  updateExpense(id: string, updates: Partial<ExpenseItem>): ExpenseItem | null {
-    const expenses = this.getExpenses();
+  async updateExpense(id: string, updates: Partial<ExpenseItem>): Promise<ExpenseItem | null> {
+    return this.withFallback(
+      async () => {
+        const response = await expenseApi.updateExpense(id, {
+          amount: updates.amount,
+          place: updates.place,
+          memo: updates.memo,
+          expenseDate: updates.date,
+          confidenceScore: updates.confidence,
+        });
+        
+        if (response.success && response.data) {
+          const updatedExpense = this.convertApiExpenseToLocal(response.data);
+          // API 성공 시 localStorage도 업데이트
+          const localExpenses = this.getExpensesSync();
+          const index = localExpenses.findIndex(e => e.id === id);
+          if (index !== -1) {
+            localExpenses[index] = updatedExpense;
+            this.saveExpenses(localExpenses);
+          }
+          return updatedExpense;
+        }
+        throw new Error('지출 수정 API 실패');
+      },
+      () => {
+        const expenses = this.getExpensesSync();
+        const index = expenses.findIndex(e => e.id === id);
+        
+        if (index === -1) return null;
+        
+        expenses[index] = {
+          ...expenses[index],
+          ...updates,
+          updatedAt: new Date(),
+        };
+        
+        this.saveExpenses(expenses);
+        return expenses[index];
+      },
+      '지출 수정 실패'
+    );
+  }
+
+  // 동기 버전 (기존 호환성 유지)
+  updateExpenseSync(id: string, updates: Partial<ExpenseItem>): ExpenseItem | null {
+    const expenses = this.getExpensesSync();
     const index = expenses.findIndex(e => e.id === id);
     
     if (index === -1) return null;
@@ -122,8 +222,35 @@ class ExpenseStore {
     return expenses[index];
   }
 
-  deleteExpense(id: string): boolean {
-    const expenses = this.getExpenses();
+  async deleteExpense(id: string): Promise<boolean> {
+    return this.withFallback(
+      async () => {
+        const response = await expenseApi.deleteExpense(id);
+        if (response.success) {
+          // API 성공 시 localStorage에서도 삭제
+          const localExpenses = this.getExpensesSync();
+          const filteredExpenses = localExpenses.filter(e => e.id !== id);
+          this.saveExpenses(filteredExpenses);
+          return true;
+        }
+        throw new Error('지출 삭제 API 실패');
+      },
+      () => {
+        const expenses = this.getExpensesSync();
+        const filteredExpenses = expenses.filter(e => e.id !== id);
+        
+        if (filteredExpenses.length === expenses.length) return false;
+        
+        this.saveExpenses(filteredExpenses);
+        return true;
+      },
+      '지출 삭제 실패'
+    );
+  }
+
+  // 동기 버전 (기존 호환성 유지)
+  deleteExpenseSync(id: string): boolean {
+    const expenses = this.getExpensesSync();
     const filteredExpenses = expenses.filter(e => e.id !== id);
     
     if (filteredExpenses.length === expenses.length) return false;
@@ -215,9 +342,60 @@ class ExpenseStore {
     }
   }
 
-  // 통계 데이터
-  getExpenseStats() {
-    const expenses = this.getExpenses();
+  // 통계 데이터 (API 우선)
+  async getExpenseStats() {
+    return this.withFallback(
+      async () => {
+        const response = await expenseApi.getCurrentMonthStats();
+        if (response.success && response.data) {
+          const recentResponse = await expenseApi.getRecentExpenses(5);
+          const recentExpenses = recentResponse.success && recentResponse.data 
+            ? recentResponse.data.map(expense => this.convertApiExpenseToLocal(expense))
+            : [];
+
+          return {
+            totalExpenses: response.data.totalExpenses,
+            totalAmount: response.data.totalAmount,
+            totalIncome: 0, // TODO: API에서 수입 데이터 지원 시 추가
+            categoryStats: response.data.categoryStats,
+            recentExpenses,
+          };
+        }
+        throw new Error('통계 API 실패');
+      },
+      () => {
+        const expenses = this.getExpensesSync();
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        
+        const thisMonthTransactions = expenses.filter(e => e.date.startsWith(currentMonth));
+        
+        // 지출과 수입 분리 계산
+        const thisMonthExpenses = thisMonthTransactions.filter(e => e.type === 'expense' || !e.type);
+        const thisMonthIncome = thisMonthTransactions.filter(e => e.type === 'income');
+        
+        const totalExpenseAmount = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const totalIncomeAmount = thisMonthIncome.reduce((sum, e) => sum + e.amount, 0);
+        
+        const categoryStats = thisMonthExpenses.reduce((acc, expense) => {
+          acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+          return acc;
+        }, {} as Record<string, number>);
+
+        return {
+          totalExpenses: thisMonthExpenses.length,
+          totalAmount: totalExpenseAmount,
+          totalIncome: totalIncomeAmount,
+          categoryStats,
+          recentExpenses: expenses.slice(0, 5),
+        };
+      },
+      '통계 조회 실패'
+    );
+  }
+
+  // 동기 버전 (기존 호환성 유지)
+  getExpenseStatsSync() {
+    const expenses = this.getExpensesSync();
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
     
     const thisMonthTransactions = expenses.filter(e => e.date.startsWith(currentMonth));

@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { User } from './user.entity';
@@ -13,6 +14,9 @@ import { Expense } from './expense.entity';
 
 @ObjectType()
 @Entity('categories')
+@Index('IDX_category_user', ['userId'])
+@Index('IDX_category_user_name', ['userId', 'name'])
+@Index('IDX_category_parent', ['parentId'])
 export class Category {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -41,6 +45,10 @@ export class Category {
   @Field()
   @Column({ default: false })
   isSystem: boolean;
+
+  @Field()
+  @Column({ default: false })
+  isIncome: boolean;
 
   @Field()
   @CreateDateColumn()

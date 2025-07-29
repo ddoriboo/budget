@@ -13,6 +13,7 @@ import { ExpenseModule } from './modules/expense/expense.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ExcelModule } from './modules/excel/excel.module';
 import { CategoryModule } from './modules/category/category.module';
+import { HealthModule } from './modules/health/health.module';
 
 // Entities
 import { User } from './entities/user.entity';
@@ -38,7 +39,22 @@ import { ExcelUpload } from './entities/excel-upload.entity';
         entities: [User, Expense, Category, ChatSession, ExcelUpload],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
-        ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: configService.get('NODE_ENV') === 'production' ? { 
+          rejectUnauthorized: false,
+          sslmode: 'require'
+        } : false,
+        // Railway PostgreSQL 최적화 설정
+        extra: {
+          connectionTimeoutMillis: 5000,
+          query_timeout: 10000,
+          statement_timeout: 10000,
+          idle_in_transaction_session_timeout: 10000,
+        },
+        // 연결 풀 최적화 (Railway 제한사항 고려)
+        poolSize: configService.get('NODE_ENV') === 'production' ? 10 : 5,
+        // 자동 재연결 설정
+        retryAttempts: 3,
+        retryDelay: 3000,
       }),
       inject: [ConfigService],
     }),
@@ -72,6 +88,7 @@ import { ExcelUpload } from './entities/excel-upload.entity';
     ]),
 
     // Feature Modules
+    HealthModule,
     AuthModule,
     UserModule,
     ExpenseModule,

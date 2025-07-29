@@ -252,13 +252,13 @@ export const Chat = () => {
                   <div className="flex space-x-2 mt-3">
                     <button 
                       onClick={() => handleConfirmExpense(message.id, message.data)}
-                      className="btn-primary btn-sm flex-1"
+                      className="btn-primary touch-button flex-1 min-h-[44px]"
                     >
                       확인
                     </button>
                     <button 
                       onClick={() => handleEditExpense(message.id, message.data)}
-                      className="btn-secondary btn-sm flex-1"
+                      className="btn-secondary touch-button flex-1 min-h-[44px]"
                     >
                       수정
                     </button>
@@ -297,7 +297,7 @@ export const Chat = () => {
             <button
               key={suggestion}
               onClick={() => setInputValue(suggestion)}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"
+              className="touch-button px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-full text-sm text-gray-700 transition-colors min-h-[44px]"
             >
               {suggestion}
             </button>
@@ -314,7 +314,7 @@ export const Chat = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="자유롭게 말씀해주세요. 예: 어제 스타벅스에서 아메리카노 5천원 마셨어"
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="touch-input w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[48px]"
               rows={2}
               disabled={isLoading}
             />
@@ -322,7 +322,7 @@ export const Chat = () => {
           <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="btn-primary touch-target disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary touch-button disabled:opacity-50 disabled:cursor-not-allowed min-w-[48px] min-h-[48px] flex items-center justify-center"
           >
             <PaperAirplaneIcon className="w-5 h-5" />
           </button>

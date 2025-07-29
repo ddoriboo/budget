@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
 import { User } from './user.entity';
@@ -13,6 +14,10 @@ import { Category } from './category.entity';
 
 @ObjectType()
 @Entity('expenses')
+@Index('IDX_expense_user_date', ['userId', 'expenseDate'])
+@Index('IDX_expense_user_category', ['userId', 'categoryId'])
+@Index('IDX_expense_date', ['expenseDate'])
+@Index('IDX_expense_amount', ['amount'])
 export class Expense {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')

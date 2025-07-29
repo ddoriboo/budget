@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { analyzeExpenseMessage } from '@/services/openai';
+import { expenseStore, ChatSession } from '@/store/expenseStore';
 
 interface Message {
   id: string;
@@ -12,19 +13,23 @@ interface Message {
 }
 
 export const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'ai',
-      content: '안녕하세요! 가계부 입력을 도와드릴게요. 어떤 지출이나 수입이 있으셨나요? 😊',
-      timestamp: new Date(),
-    }
-  ]);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // 컴포넌트 초기화 시 현재 세션 로드 또는 새 세션 생성
+  useEffect(() => {
+    let session = expenseStore.getCurrentSession();
+    if (!session) {
+      session = expenseStore.createNewSession();
+    }
+    setCurrentSession(session);
+    setMessages(session.messages);
+  }, []);
+
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !currentSession) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -34,13 +39,25 @@ export const Chat = () => {
     };
 
     const currentInput = inputValue;
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputValue('');
     setIsLoading(true);
 
+    // 세션에 사용자 메시지 추가
+    expenseStore.addMessageToSession(currentSession.id, userMessage);
+
     try {
-      // 실제 OpenAI API 호출
-      const analysisResult = await analyzeExpenseMessage(currentInput);
+      // 대화 컨텍스트 구성 (최근 10개 메시지만)
+      const conversationHistory = updatedMessages
+        .slice(-10)
+        .map(msg => ({
+          role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+          content: msg.content
+        }));
+
+      // 실제 OpenAI API 호출 (컨텍스트 포함)
+      const analysisResult = await analyzeExpenseMessage(currentInput, conversationHistory);
 
       if (analysisResult.success && analysisResult.expenses.length > 0) {
         const expense = analysisResult.expenses[0]; // 첫 번째 지출 항목 사용
@@ -60,7 +77,13 @@ export const Chat = () => {
             memo: expense.memo
           }
         };
-        setMessages(prev => [...prev, aiResponse]);
+        
+        const finalMessages = [...updatedMessages, aiResponse];
+        setMessages(finalMessages);
+        
+        // 세션에 AI 응답 추가
+        expenseStore.addMessageToSession(currentSession.id, aiResponse);
+        
       } else if (analysisResult.clarification_needed) {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
@@ -68,7 +91,13 @@ export const Chat = () => {
           content: analysisResult.clarification_message || '죄송해요, 입력하신 내용을 정확히 이해하지 못했어요. 좀 더 구체적으로 말씀해주시겠어요?',
           timestamp: new Date(),
         };
-        setMessages(prev => [...prev, aiResponse]);
+        
+        const finalMessages = [...updatedMessages, aiResponse];
+        setMessages(finalMessages);
+        
+        // 세션에 AI 응답 추가
+        expenseStore.addMessageToSession(currentSession.id, aiResponse);
+        
       } else {
         throw new Error('분석 결과가 없습니다.');
       }
@@ -80,7 +109,13 @@ export const Chat = () => {
         content: '죄송해요, 지금 일시적으로 분석이 어려워요. 잠시 후 다시 시도해주세요.',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorResponse]);
+      
+      const finalMessages = [...updatedMessages, errorResponse];
+      setMessages(finalMessages);
+      
+      // 세션에 에러 응답 추가
+      expenseStore.addMessageToSession(currentSession.id, errorResponse);
+      
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +129,19 @@ export const Chat = () => {
   };
 
   const handleConfirmExpense = (_messageId: string, data: any) => {
+    if (!currentSession) return;
+    
+    // 실제 데이터 저장
+    const savedExpense = expenseStore.addExpense({
+      date: data.date,
+      amount: data.amount,
+      category: data.category,
+      subcategory: data.subcategory,
+      place: data.place,
+      memo: data.memo,
+      confidence: data.confidence,
+    });
+    
     // 지출 확인 처리
     const confirmMessage: Message = {
       id: Date.now().toString(),
@@ -101,16 +149,25 @@ export const Chat = () => {
       content: `✅ 지출 내역이 가계부에 저장되었습니다!\n\n${data.date} | ${data.place} | ${data.category} > ${data.subcategory} | ${data.amount.toLocaleString()}원`,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, confirmMessage]);
+    
+    const updatedMessages = [...messages, confirmMessage];
+    setMessages(updatedMessages);
+    
+    // 세션에 확인 메시지 추가
+    expenseStore.addMessageToSession(currentSession.id, confirmMessage);
     
     // 성공 토스트
     toast.success('가계부에 저장되었습니다!', {
       icon: '✅',
       duration: 3000,
     });
+    
+    console.log('저장된 데이터:', savedExpense);
   };
 
   const handleEditExpense = (_messageId: string, _data: any) => {
+    if (!currentSession) return;
+    
     // 지출 수정 처리
     const editMessage: Message = {
       id: Date.now().toString(),
@@ -118,7 +175,12 @@ export const Chat = () => {
       content: `어떤 부분을 수정하시겠어요? 예: "금액을 8천원으로 바꿔줘", "카테고리를 교통으로 바꿔줘"`,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, editMessage]);
+    
+    const updatedMessages = [...messages, editMessage];
+    setMessages(updatedMessages);
+    
+    // 세션에 수정 요청 메시지 추가
+    expenseStore.addMessageToSession(currentSession.id, editMessage);
   };
 
   return (

@@ -45,7 +45,10 @@ const parseRelativeDate = (text: string): string => {
   return today.toISOString().split('T')[0];
 };
 
-export const analyzeExpenseMessage = async (message: string): Promise<{
+export const analyzeExpenseMessage = async (
+  message: string, 
+  conversationHistory: Array<{role: 'user' | 'assistant', content: string}> = []
+): Promise<{
   success: boolean;
   expenses: ExpenseData[];
   clarification_needed: boolean;
@@ -82,6 +85,11 @@ export const analyzeExpenseMessage = async (message: string): Promise<{
 
 **오늘 날짜: ${getCurrentDate()}**
 
+**이전 대화 컨텍스트를 고려하여 답변하세요:**
+- 사용자가 "그거" "그것" "그때" 등의 지시어를 사용하면 이전 대화를 참조
+- 수정 요청 시 이전에 분석한 데이터를 기반으로 수정
+- 추가 정보 요청 시 기존 정보와 연결하여 이해
+
 응답은 반드시 다음 JSON 형식으로 제공하세요:
 {
   "expenses": [
@@ -115,6 +123,7 @@ export const analyzeExpenseMessage = async (message: string): Promise<{
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
+          ...conversationHistory,
           { role: 'user', content: message }
         ],
         temperature: 0.1,

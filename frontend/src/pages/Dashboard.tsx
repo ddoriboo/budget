@@ -1,7 +1,51 @@
 import { PlusIcon, ChatBubbleLeftRightIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { expenseStore } from '@/store/expenseStore';
 
 export const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalExpenses: 0,
+    totalAmount: 0,
+    categoryStats: {} as Record<string, number>,
+    recentExpenses: [] as any[],
+  });
+  const [recentChats, setRecentChats] = useState<any[]>([]);
+
+  useEffect(() => {
+    // 통계 데이터 로드
+    const expenseStats = expenseStore.getExpenseStats();
+    setStats(expenseStats);
+
+    // 최근 대화 내역 로드
+    const chatSessions = expenseStore.getChatSessions();
+    const recentChatData = chatSessions.slice(0, 3).map(session => {
+      const lastUserMessage = session.messages
+        .slice()
+        .reverse()
+        .find(msg => msg.type === 'user');
+      
+      const lastAiMessage = session.messages
+        .slice()
+        .reverse()
+        .find(msg => msg.type === 'ai' && msg.data);
+
+      return {
+        time: new Date(session.lastMessageAt).toLocaleString('ko-KR', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        message: lastUserMessage?.content || '대화 없음',
+        result: lastAiMessage?.data 
+          ? `${lastAiMessage.data.category} > ${lastAiMessage.data.subcategory}, ${lastAiMessage.data.amount.toLocaleString()}원`
+          : '분석 결과 없음'
+      };
+    });
+    setRecentChats(recentChatData);
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* 웰컴 섹션 */}
@@ -18,8 +62,8 @@ export const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">이번 달 지출</p>
-              <p className="text-2xl font-bold text-red-500">₩1,234,567</p>
-              <p className="text-sm text-gray-500 mt-1">예산 대비 67%</p>
+              <p className="text-2xl font-bold text-red-500">₩{stats.totalAmount.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 mt-1">{stats.totalExpenses}건의 지출</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <span className="text-red-600 text-2xl">📉</span>
@@ -97,11 +141,7 @@ export const Dashboard = () => {
       <div className="card p-6">
         <h2 className="text-lg font-semibold mb-4">최근 대화 내역</h2>
         <div className="space-y-4">
-          {[
-            { time: '2시간 전', message: '점심으로 김치찌개 8천원 먹었어', result: '식비 > 한식, 8,000원' },
-            { time: '어제', message: '지하철비 2천원', result: '교통 > 지하철, 2,000원' },
-            { time: '3일 전', message: '스타벅스에서 아메리카노 4500원', result: '식비 > 카페, 4,500원' },
-          ].map((item, index) => (
+          {recentChats.length > 0 ? recentChats.map((item, index) => (
             <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
               <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
               <div className="flex-1">
@@ -110,7 +150,12 @@ export const Dashboard = () => {
                 <div className="text-sm text-primary mt-1">→ {item.result}</div>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>아직 대화 내역이 없습니다.</p>
+              <p className="text-sm mt-1">채팅으로 첫 가계부를 입력해보세요!</p>
+            </div>
+          )}
         </div>
         <div className="mt-4 text-center">
           <Link to="/chat" className="text-primary hover:text-primary-600 text-sm font-medium">

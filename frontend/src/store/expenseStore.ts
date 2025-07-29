@@ -60,6 +60,7 @@ class ExpenseStore {
       place: apiExpense.place || '',
       memo: apiExpense.memo,
       confidence: apiExpense.confidenceScore || 1.0,
+      type: apiExpense.amount >= 0 ? 'expense' : 'income', // API에서 음수는 수입으로 처리
       createdAt: new Date(apiExpense.createdAt),
       updatedAt: new Date(apiExpense.updatedAt),
     };

@@ -8,12 +8,12 @@
 3. "Deploy from GitHub repo" 선택
 4. `ddoriboo/budget` 저장소 선택
 
-### 2. 환경 변수 설정
-Railway 대시보드에서 다음 환경 변수들을 설정하세요:
+### 2. 환경 변수 설정 ⚠️ 중요!
+Railway 대시보드에서 다음 환경 변수들을 **반드시** 설정하세요:
 
 ```bash
-# 필수 환경 변수
-VITE_OPENAI_API_KEY=your_openai_api_key_here
+# 🔑 필수 환경 변수 - 없으면 앱이 작동하지 않습니다!
+VITE_OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxx  # OpenAI API 키
 NODE_ENV=production
 PORT=3000
 
@@ -22,6 +22,14 @@ DATABASE_URL=postgresql://user:password@host:5432/moneychat
 REDIS_URL=redis://host:6379
 JWT_SECRET=your-production-jwt-secret
 ```
+
+**🔧 Railway 환경변수 설정 방법:**
+1. Railway 프로젝트 대시보드로 이동
+2. "Variables" 탭 클릭
+3. "New Variable" 버튼 클릭
+4. Variable name: `VITE_OPENAI_API_KEY`
+5. Variable value: 실제 OpenAI API 키 입력
+6. "Add" 버튼 클릭
 
 ### 3. 빌드 설정
 Railway가 자동으로 감지하지만, 확인용:

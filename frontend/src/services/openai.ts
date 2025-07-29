@@ -54,7 +54,12 @@ export const analyzeExpenseMessage = async (message: string): Promise<{
   try {
     // API 키 확인
     if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
-      throw new Error('OpenAI API 키가 설정되지 않았습니다.');
+      return {
+        success: false,
+        expenses: [],
+        clarification_needed: true,
+        clarification_message: '⚠️ OpenAI API 키가 설정되지 않았습니다. 관리자에게 문의하세요.',
+      };
     }
     const systemPrompt = `
 당신은 한국어 가계부 입력을 분석하는 전문 AI입니다.

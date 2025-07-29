@@ -1,0 +1,21 @@
+{
+  "name": "머니챗 - LLM 기반 대화형 가계부",
+  "short_name": "머니챗",
+  "description": "가계부 작성을 업무가 아닌 대화로 만들어주는 지능형 가계부 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#03C75A",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

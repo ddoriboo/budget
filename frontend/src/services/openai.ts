@@ -41,6 +41,13 @@ const parseRelativeDate = (text: string): string => {
     return dayBeforeYesterday.toISOString().split('T')[0];
   }
   
+  // 그그저께 (3일 전)
+  if (lowerText.includes('그그저께')) {
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(today.getDate() - 3);
+    return threeDaysAgo.toISOString().split('T')[0];
+  }
+  
   // 지난주 관련
   if (lowerText.includes('지난주') || lowerText.includes('저번주')) {
     const lastWeek = new Date(today);
@@ -192,19 +199,31 @@ export const analyzeExpenseMessage = async (
 5. **장소/상점**: 구체적인 장소명이나 상점명
 6. **메모**: 추가 정보나 상황 설명
 
-**날짜 해석 규칙 (매우 중요!):**
-- 오늘: ${getCurrentDate()}
-- 어제: 1일 전
-- 그저께/그제: 2일 전
-- 지난주/저번주: 7일 전
-- 이번주: 이번 주 월요일
-- 지난 [요일]: 지난주 해당 요일
-- 이번 [요일]: 이번주 해당 요일 (아직 오지 않았으면 지난주)
-- 지난달/저번달: 지난달 같은 날
-- 이번달: 이번달 1일
-- N일 전: 정확히 N일 전
-- N주 전: N주 전 같은 요일
-- N달 전: N달 전 같은 날
+**날짜 해석 규칙 (매우 중요! 절대 실수하지 말 것!):**
+
+**현재 기준일: ${getCurrentDate()}**
+
+**상대적 날짜 변환:**
+- "오늘": ${getCurrentDate()}
+- "어제": ${parseRelativeDate('어제')}  
+- "그저께", "그제": ${parseRelativeDate('그저께')}
+- "그그저께": ${parseRelativeDate('그그저께')}
+
+**주 단위:**
+- "지난주", "저번주": ${parseRelativeDate('지난주')}
+- "이번주": ${parseRelativeDate('이번주')}
+
+**월 단위:**
+- "지난달", "저번달": ${parseRelativeDate('지난달')}
+- "이번달": ${parseRelativeDate('이번달')}
+
+**절대 규칙: 사용자가 "어제"라고 하면 무조건 ${parseRelativeDate('어제')}로 설정하세요.**
+**절대 규칙: 사용자가 "오늘이 아니라 어제"라고 하면 ${parseRelativeDate('어제')}로 수정하세요.**
+
+**예시:**
+- "어제 스타벅스에서 5천원" → date: "${parseRelativeDate('어제')}"
+- "오늘이 아니라 어제 미용실에서 4만원" → date: "${parseRelativeDate('어제')}"
+- "그저께 마트에서 쇼핑" → date: "${parseRelativeDate('그저께')}"
 
 **거래 유형 구분 (매우 중요! 놓치지 말 것!):**
 - 수입(income) 키워드: 월급, 급여, 보너스, 용돈, 부수입, 프리랜서, 이자, 배당금, "들어옴", "받았다", "입금", "월급", "수입", "받음", "용돈", "보너스"
@@ -267,6 +286,11 @@ ${analyzeConversationContext(message, conversationHistory)}
 - 한 문장에 여러 거래가 있으면 각각 분리
 - 확실하지 않은 정보는 confidence를 낮게 설정
 - 정말 이해할 수 없는 경우에만 clarification_needed를 true로 설정
+
+**수정 요청 처리:**
+- "오늘이 아니라 어제" → 날짜를 어제로 수정
+- "아니다", "수정", "틀렸다" 등의 표현 인식
+- 이전 대화 맥락을 고려하여 수정사항 반영
 
 **오타 처리 규칙:**
 - "지단달" → "지난달"로 해석

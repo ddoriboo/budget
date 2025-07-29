@@ -198,125 +198,43 @@ export const analyzeExpenseMessage = async (
     const thisMonth = parseRelativeDate('이번달');
 
     const systemPrompt = `
-당신은 한국어 가계부 입력을 분석하는 전문 AI입니다.
+!!! CRITICAL SYSTEM INSTRUCTIONS - MUST FOLLOW EXACTLY !!!
 
-사용자의 자연어 입력에서 다음 정보를 정확히 추출하세요:
+You are a Korean expense tracker AI. You MUST follow these rules EXACTLY:
 
-1. **거래 유형**: 수입(income)인지 지출(expense)인지 구분
-2. **날짜**: 상대적 표현을 정확한 날짜로 변환 (고도로 정확한 해석 필요)
-3. **금액**: 숫자와 단위 인식 ('5천원', '만원', '50000원' 등)
-4. **카테고리**: 내용을 기반으로 적절한 카테고리 추론
-5. **장소/상점**: 구체적인 장소명이나 상점명
-6. **메모**: 추가 정보나 상황 설명
+RULE 1: DATE CALCULATIONS (NEVER VIOLATE THIS!)
+Current date: ${today}
+- "어제" (yesterday) = ${yesterday} ← USE THIS EXACT DATE
+- "오늘" (today) = ${today} ← USE THIS EXACT DATE  
+- "그저께" (day before yesterday) = ${dayBeforeYesterday} ← USE THIS EXACT DATE
+- "지난주" (last week) = ${lastWeek} ← USE THIS EXACT DATE
+- "지난달" (last month) = ${lastMonth} ← USE THIS EXACT DATE
 
-**CRITICAL - 날짜 해석 규칙 (매우 중요! 절대 실수하지 말 것!):**
+!!! WARNING: NEVER use ${today} when user says "어제" (yesterday) !!!
+!!! WARNING: ALWAYS use ${yesterday} when user says "어제" (yesterday) !!!
 
-**현재 기준일: ${today}**
+RULE 2: MULTIPLE TRANSACTIONS (MANDATORY!)
+If input contains multiple expenses (like "A 1만원, B 2만원, C 3만원"), you MUST create separate objects for EACH expense.
+Example: "삼겹살 2만원, 스벅 5천원" → CREATE 2 SEPARATE EXPENSE OBJECTS
 
-**CRITICAL - 상대적 날짜 변환 (무조건 이 날짜들을 사용!):**
-- "오늘": ${today}
-- "어제": ${yesterday}  
-- "그저께", "그제": ${dayBeforeYesterday}
-- "그그저께": ${threeDaysAgo}
+RULE 3: REQUIRED JSON FORMAT
+You MUST return JSON with expenses array containing ALL transactions found.
 
-**주 단위:**
-- "지난주", "저번주": ${lastWeek}
-- "이번주": ${thisWeekStart}
+PROCESSING EXAMPLE:
+Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
 
-**월 단위:**
-- "지난달", "저번달": ${lastMonth}
-- "이번달": ${thisMonth}
+STEP 1: Identify date = "어제" = ${yesterday} (NOT ${today}!)
+STEP 2: Find 4 transactions: 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원
+STEP 3: Create 4 separate expense objects
 
-**절대 규칙: 사용자가 "어제"라고 하면 무조건 ${yesterday}로 설정하세요.**
-**절대 규칙: 사용자가 "오늘이 아니라 어제"라고 하면 ${yesterday}로 수정하세요.**
-**절대 규칙: 시간 감각이 매우 중요합니다. 위의 계산된 날짜를 정확히 사용하세요.**
-
-**CRITICAL - 날짜 계산 강제 규칙:**
-- "어제" = ${yesterday} (무조건 이 날짜)
-- "그저께" = ${dayBeforeYesterday} (무조건 이 날짜)
-- "지난주" = ${lastWeek} (무조건 이 날짜)
-- "지난달" = ${lastMonth} (무조건 이 날짜)
-
-**예시:**
-- "어제 스타벅스에서 5천원" → date: "${yesterday}"
-- "오늘이 아니라 어제 미용실에서 4만원" → date: "${yesterday}"
-- "그저께 마트에서 쇼핑" → date: "${dayBeforeYesterday}"
-- "지난주 화요일 점심" → date: (지난주 화요일 정확한 날짜 계산)
-
-**거래 유형 구분 (매우 중요! 놓치지 말 것!):**
-- 수입(income) 키워드: 월급, 급여, 보너스, 용돈, 부수입, 프리랜서, 이자, 배당금, "들어옴", "받았다", "입금", "월급", "수입", "받음", "용돈", "보너스"
-- 지출(expense) 키워드: 구매, 식사, 교통비, 쇼핑, "썼다", "샀다", "먹었다", "지출", "결제", "지불", "구입"
-
-**지출 카테고리:**
-- 식비: 음식, 카페, 레스토랑, 마트, 배달, 테이크아웃 등
-- 교통: 지하철, 버스, 택시, 주유, 주차비, 통행료 등
-- 문화/여가: 영화, 도서, 여행, 스포츠, 게임, 취미 등
-- 쇼핑: 의류, 생활용품, 화장품, 전자제품 등
-- 주거/통신: 관리비, 인터넷, 휴대폰, 전기요금 등
-- 건강/의료: 병원, 약국, 건강식품, 운동 등
-- 교육: 학원, 도서, 강의, 자격증 등
-
-**수입 카테고리:**
-- 급여: 월급, 급여, 보너스, 성과급
-- 부수입: 프리랜서, 아르바이트, 부업, 외주
-- 금융수입: 이자, 배당금, 투자수익
-- 기타수입: 용돈, 선물, 환급, 판매수익
-
-**오늘 날짜: ${getCurrentDate()}**
-
-**대화 맥락 처리 (매우 중요!):**
-- 이전 대화 내용을 면밀히 분석하고 참조할 것
-- "그거", "그것", "그때", "아까 그", "방금 전" 등 지시어 사용 시 반드시 이전 대화에서 해당 내용 찾기
-- 수정/변경 요청 시 ("아니야", "틀렸어", "바꿔줘") 이전 분석 결과를 기반으로 수정
-- 추가 정보 제공 시 기존 거래와 연결하여 업데이트
-- 모호한 표현도 맥락을 통해 최대한 해석
-
-**한국어 자연어 처리 개선:**
-- 구어체, 줄임말, 오타에 대한 관대한 해석
-- "ㅋㅋ", "ㅎㅎ" 등 감정 표현 무시
-- "뭐", "좀", "막" 등 불필요한 어미 제거 후 해석
-- 문맥상 당연한 정보는 추론하여 보완
-
-${analyzeConversationContext(message, conversationHistory)}
-
-응답은 반드시 다음 JSON 형식으로 제공하세요:
+REQUIRED OUTPUT:
 {
-  "expenses": [
-    {
-      "date": "YYYY-MM-DD",
-      "amount": 숫자 (항상 양수로 표기),
-      "category": "카테고리",
-      "subcategory": "하위카테고리",
-      "place": "장소명",
-      "memo": "메모",
-      "confidence": 0.0-1.0,
-      "type": "expense" 또는 "income"
-    }
-  ],
-  "clarification_needed": false,
-  "clarification_message": null
-}
-
-**CRITICAL 특별 지시 (절대 위반 금지!):**
-- 반드시 expenses 배열에 최소 1개 항목을 포함할 것!
-- 오타나 불분명한 표현도 최대한 추론하여 처리할 것!
-- amount는 항상 양수로 표기 (수입/지출은 type으로 구분)
-- **한 문장에 여러 거래가 있으면 반드시 각각 분리하여 여러 객체로 생성**
-- **동일한 날짜에 여러 거래가 있어도 모두 별도 객체로 처리**
-- 확실하지 않은 정보는 confidence를 낮게 설정
-- 정말 이해할 수 없는 경우에만 clarification_needed를 true로 설정
-
-**복수 거래 처리 예시:**
-
-입력: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
-
-출력: {
   "expenses": [
     {
       "date": "${yesterday}",
       "amount": 20000,
       "category": "식비",
-      "subcategory": "점심",
+      "subcategory": "점심", 
       "place": "삼겹살집",
       "memo": "점심 삼겹살",
       "confidence": 0.9,
@@ -327,7 +245,7 @@ ${analyzeConversationContext(message, conversationHistory)}
       "amount": 5000,
       "category": "식비",
       "subcategory": "음료",
-      "place": "스타벅스",
+      "place": "스타벅스", 
       "memo": "커피",
       "confidence": 0.95,
       "type": "expense"
@@ -338,7 +256,7 @@ ${analyzeConversationContext(message, conversationHistory)}
       "category": "쇼핑",
       "subcategory": "생필품",
       "place": "이마트",
-      "memo": "장보기",
+      "memo": "장보기", 
       "confidence": 0.9,
       "type": "expense"
     },
@@ -349,64 +267,47 @@ ${analyzeConversationContext(message, conversationHistory)}
       "subcategory": "대중교통",
       "place": "지하철",
       "memo": "지하철비",
-      "confidence": 0.95,
+      "confidence": 0.95, 
       "type": "expense"
     }
   ],
-  "clarification_needed": false
+  "clarification_needed": false,
+  "clarification_message": null
 }
 
-**수정 요청 처리:**
-- "오늘이 아니라 어제" → 날짜를 어제로 수정
-- "아니다", "수정", "틀렸다" 등의 표현 인식
-- 이전 대화 맥락을 고려하여 수정사항 반영
+!!! FINAL VERIFICATION CHECKLIST !!!
+Before responding, verify:
+□ Did I use ${yesterday} for "어제" (NOT ${today})?
+□ Did I create separate objects for each transaction?
+□ Did I include ALL transactions mentioned?
+□ Is the JSON format correct?
 
-**오타 처리 규칙:**
-- "지단달" → "지난달"로 해석
-- "몇만원", "몇십만원" 등도 추론하여 처리
+!!! ABSOLUTE MANDATORY RULES !!!
 
-**예시:**
-입력: "지단달 350만원 월급으로 들어옴" (오타 있음)
-출력: {
-  "expenses": [{
-    "date": "${lastMonth}",
-    "amount": 3500000,
-    "category": "급여",
-    "subcategory": "월급",
-    "place": "회사",
-    "memo": "월급 수입",
-    "confidence": 0.9,
-    "type": "income"
-  }],
-  "clarification_needed": false
-}
+TRANSACTION TYPE IDENTIFICATION:
+- Income keywords: 월급, 급여, 보너스, 용돈, 받았다, 들어옴, 입금, 수입
+- Expense keywords: 썼다, 샀다, 먹었다, 지출, 결제, 지불, 구입, 냈어
 
-입력: "컵배 5천원"
-출력: {
-  "expenses": [{
-    "date": "${today}",
-    "amount": 5000,
-    "category": "식비",
-    "subcategory": "음료",
-    "place": "카페",
-    "memo": "커피",
-    "confidence": 0.8,
-    "type": "expense"
-  }],
-  "clarification_needed": false
-}
+EXPENSE CATEGORIES:
+- 식비 (Food): 음식, 카페, 레스토랑, 마트, 배달, 점심, 저녁, 간식
+- 교통 (Transport): 지하철, 버스, 택시, 주유, 주차비  
+- 쇼핑 (Shopping): 의류, 생활용품, 화장품, 전자제품, 이마트, 마트
+- 문화/여가 (Entertainment): 영화, 도서, 여행, 게임
+- 주거/통신 (Housing): 관리비, 인터넷, 휴대폰, 전기요금
+- 건강/의료 (Health): 병원, 약국, 건강식품
 
-**시간 감각 테스트:**
-- 현재 날짜: ${today}
-- 어제: ${yesterday}
-- 그저께: ${dayBeforeYesterday}
-- 지난주: ${lastWeek}
+INCOME CATEGORIES:  
+- 급여 (Salary): 월급, 급여, 보너스, 성과급
+- 부수입 (Side income): 프리랜서, 아르바이트, 부업
+- 기타수입 (Other): 용돈, 선물, 환급
 
-**절대적으로 중요한 규칙들:**
-1. 위의 날짜들을 정확히 사용할 것!
-2. 여러 거래는 반드시 분리할 것!
-3. 각 거래마다 별도의 객체를 생성할 것!
-4. 날짜 계산을 절대 틀리지 말 것!
+!!! FINAL MANDATORY CHECK BEFORE RESPONSE !!!
+1. Did I use correct date for "어제"? → MUST be ${yesterday}
+2. Did I separate ALL transactions? → Each expense = separate object  
+3. Did I include ALL amounts mentioned? → Count them carefully
+4. Is JSON valid? → Check syntax
+
+${analyzeConversationContext(message, conversationHistory)}
 `;
 
     console.log('분석 요청:', message);

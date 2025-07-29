@@ -32,6 +32,17 @@ const parseRelativeDate = (text: string): string => {
     const dayBeforeYesterday = new Date(today);
     dayBeforeYesterday.setDate(today.getDate() - 2);
     return dayBeforeYesterday.toISOString().split('T')[0];
+  } else if (lowerText.includes('지난달') || lowerText.includes('저번달') || lowerText.includes('전달')) {
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(today.getMonth() - 1);
+    // 지난달 1일로 설정
+    lastMonth.setDate(1);
+    return lastMonth.toISOString().split('T')[0];
+  } else if (lowerText.includes('이번달') || lowerText.includes('이달')) {
+    // 이번달 1일로 설정
+    const thisMonth = new Date(today);
+    thisMonth.setDate(1);
+    return thisMonth.toISOString().split('T')[0];
   }
   
   // "3일 전" 형태 파싱
@@ -71,15 +82,23 @@ export const analyzeExpenseMessage = async (
 사용자의 자연어 입력에서 다음 정보를 정확히 추출하세요:
 
 1. **거래 유형**: 수입(income)인지 지출(expense)인지 구분
-2. **날짜**: 상대적 표현('어제', '그저께', '3일 전' 등)을 정확한 날짜로 변환
+2. **날짜**: 상대적 표현을 정확한 날짜로 변환
+   - '오늘': 오늘 날짜
+   - '어제': 어제 날짜  
+   - '지난달', '저번달': 지난달 1일
+   - '이번달': 이번달 1일
+   - '3일 전': 3일 전 날짜
 3. **금액**: 숫자와 단위 인식 ('5천원', '만원', '50000원' 등)
 4. **카테고리**: 내용을 기반으로 적절한 카테고리 추론
 5. **장소/상점**: 구체적인 장소명이나 상점명
 6. **메모**: 추가 정보나 상황 설명
 
-**거래 유형 구분:**
-- 수입(income): 월급, 급여, 보너스, 용돈, 부수입, 프리랜서 수입, 이자, 배당금 등
-- 지출(expense): 구매, 식사, 교통비, 쇼핑 등 돈을 쓴 경우
+**거래 유형 구분 (매우 중요! 놓치지 말 것!):**
+- 수입(income) 키워드: 월급, 급여, 보너스, 용돈, 부수입, 프리랜서, 이자, 배당금, "들어옴", "받았다", "입금", "월급", "수입"
+- 지출(expense) 키워드: 구매, 식사, 교통비, 쇼핑, "썼다", "샀다", "먹었다", "지출", "결제"
+
+**중요: 다음 단어가 포함되면 무조건 income으로 분류할 것:**
+- "월급", "급여", "들어옴", "받았다", "입금"
 
 **지출 카테고리:**
 - 식비: 음식, 카페, 레스토랑, 마트 등
@@ -125,8 +144,27 @@ export const analyzeExpenseMessage = async (
 - 한 문장에 여러 거래가 있으면 각각 분리
 - 확실하지 않은 정보는 confidence를 낮게 설정
 - 금액이 명확하지 않으면 clarification_needed를 true로 설정
+
+**예시:**
+입력: "지난달 월급 350만원 들어옴"
+출력: {
+  "expenses": [{
+    "date": "지난달 1일 날짜",
+    "amount": 3500000,
+    "category": "급여",
+    "subcategory": "월급",
+    "place": "회사",
+    "memo": "월급",
+    "confidence": 0.95,
+    "type": "income"
+  }],
+  "clarification_needed": false
+}
 `;
 
+    console.log('분석 요청:', message);
+    console.log('대화 이력:', conversationHistory);
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -147,11 +185,16 @@ export const analyzeExpenseMessage = async (
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API 에러:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI 응답:', data);
+    
     const result = JSON.parse(data.choices[0].message.content);
+    console.log('파싱된 결과:', result);
 
     // 날짜 정규화
     if (result.expenses) {

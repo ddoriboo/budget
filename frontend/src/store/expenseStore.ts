@@ -1,4 +1,7 @@
-// LocalStorage 기반 비용 데이터 저장소
+// Hybrid Storage: API + LocalStorage fallback
+
+import { expenseApi, ExpenseApiService, ApiExpense, CreateExpenseRequest, UpdateExpenseRequest } from '@/services/expenseApi';
+import { chatApi, ChatApiService, ApiChatSession, CreateChatSessionRequest, AddMessageRequest } from '@/services/chatApi';
 
 export interface ExpenseItem {
   id: string;
@@ -25,15 +28,78 @@ const EXPENSES_KEY = 'moneychat_expenses';
 const CHAT_SESSIONS_KEY = 'moneychat_chat_sessions';
 
 class ExpenseStore {
-  // 비용 데이터 관리
-  getExpenses(): ExpenseItem[] {
-    try {
-      const data = localStorage.getItem(EXPENSES_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch (error) {
-      console.error('비용 데이터 로드 실패:', error);
-      return [];
+  private useApi: boolean = true;
+
+  // API를 먼저 시도하고, 실패하면 localStorage 사용
+  private async withFallback<T>(
+    apiCall: () => Promise<T>,
+    fallbackCall: () => T,
+    errorMessage: string = 'API 호출 실패'
+  ): Promise<T> {
+    if (!this.useApi) {
+      return fallbackCall();
     }
+
+    try {
+      return await apiCall();
+    } catch (error) {
+      console.warn(`${errorMessage}, localStorage로 fallback:`, error);
+      return fallbackCall();
+    }
+  }
+
+  // API 데이터를 localStorage 형식으로 변환
+  private convertApiExpenseToLocal(apiExpense: ApiExpense): ExpenseItem {
+    return {
+      id: apiExpense.id,
+      date: apiExpense.expenseDate,
+      amount: apiExpense.amount,
+      category: apiExpense.category?.name || '기타',
+      subcategory: apiExpense.category?.name || '기타',
+      place: apiExpense.place || '',
+      memo: apiExpense.memo,
+      confidence: apiExpense.confidenceScore || 1.0,
+      createdAt: new Date(apiExpense.createdAt),
+      updatedAt: new Date(apiExpense.updatedAt),
+    };
+  }
+
+  // localStorage 데이터를 API 형식으로 변환
+  private convertLocalExpenseToApi(localExpense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): CreateExpenseRequest {
+    return {
+      amount: localExpense.amount,
+      place: localExpense.place,
+      memo: localExpense.memo,
+      expenseDate: localExpense.date,
+      confidenceScore: localExpense.confidence,
+      metadata: {
+        category: localExpense.category,
+        subcategory: localExpense.subcategory,
+      },
+    };
+  }
+
+  // 비용 데이터 관리 (하이브리드)
+  async getExpenses(): Promise<ExpenseItem[]> {
+    return this.withFallback(
+      async () => {
+        const response = await expenseApi.getExpenses();
+        if (response.success && response.data) {
+          return response.data.expenses.map(this.convertApiExpenseToLocal);
+        }
+        throw new Error('API 응답 실패');
+      },
+      () => {
+        try {
+          const data = localStorage.getItem(EXPENSES_KEY);
+          return data ? JSON.parse(data) : [];
+        } catch (error) {
+          console.error('localStorage 로드 실패:', error);
+          return [];
+        }
+      },
+      '지출 목록 로드'
+    );
   }
 
   addExpense(expense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): ExpenseItem {

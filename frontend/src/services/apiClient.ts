@@ -1,0 +1,124 @@
+// API 클라이언트 설정 및 공통 기능
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export class ApiClient {
+  private baseURL: string;
+  private token: string | null = null;
+
+  constructor(baseURL: string = API_BASE_URL) {
+    this.baseURL = baseURL;
+    this.loadToken();
+  }
+
+  private loadToken(): void {
+    // 개발 환경에서는 임시 토큰 사용 (JWT 인증 우회)
+    if (import.meta.env.MODE === 'development') {
+      this.token = 'dev-bypass-token';
+    } else {
+      this.token = localStorage.getItem('auth_token');
+    }
+  }
+
+  private async makeRequest<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    try {
+      const url = `${this.baseURL}${endpoint}`;
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+
+      if (this.token) {
+        headers.Authorization = `Bearer ${this.token}`;
+      }
+
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.message || `HTTP ${response.status}`,
+        };
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error('API Request failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // GET 요청
+  async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+    const url = new URL(`${this.baseURL}${endpoint}`);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    return this.makeRequest<T>(url.pathname + url.search);
+  }
+
+  // POST 요청
+  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  // PATCH 요청
+  async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  // DELETE 요청
+  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'DELETE',
+    });
+  }
+
+  // 토큰 설정
+  setToken(token: string): void {
+    this.token = token;
+    if (import.meta.env.MODE !== 'development') {
+      localStorage.setItem('auth_token', token);
+    }
+  }
+
+  // 토큰 제거
+  clearToken(): void {
+    this.token = null;
+    localStorage.removeItem('auth_token');
+  }
+}
+
+export const apiClient = new ApiClient();

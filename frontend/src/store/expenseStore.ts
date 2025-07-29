@@ -79,27 +79,15 @@ class ExpenseStore {
     };
   }
 
-  // 비용 데이터 관리 (하이브리드)
-  async getExpenses(): Promise<ExpenseItem[]> {
-    return this.withFallback(
-      async () => {
-        const response = await expenseApi.getExpenses();
-        if (response.success && response.data) {
-          return response.data.expenses.map(this.convertApiExpenseToLocal);
-        }
-        throw new Error('API 응답 실패');
-      },
-      () => {
-        try {
-          const data = localStorage.getItem(EXPENSES_KEY);
-          return data ? JSON.parse(data) : [];
-        } catch (error) {
-          console.error('localStorage 로드 실패:', error);
-          return [];
-        }
-      },
-      '지출 목록 로드'
-    );
+  // 비용 데이터 관리 (localStorage 기반, API는 향후 마이그레이션)
+  getExpenses(): ExpenseItem[] {
+    try {
+      const data = localStorage.getItem(EXPENSES_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('비용 데이터 로드 실패:', error);
+      return [];
+    }
   }
 
   addExpense(expense: Omit<ExpenseItem, 'id' | 'createdAt' | 'updatedAt'>): ExpenseItem {

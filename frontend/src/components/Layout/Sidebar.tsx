@@ -25,8 +25,8 @@ export const Sidebar = () => {
   });
 
   useEffect(() => {
-    const updateStats = () => {
-      const expenseStats = expenseStore.getExpenseStats();
+    const updateStats = async () => {
+      const expenseStats = await expenseStore.getExpenseStats();
       setStats({
         totalAmount: expenseStats.totalAmount,
         totalExpenses: expenseStats.totalExpenses,

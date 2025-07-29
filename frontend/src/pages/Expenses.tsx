@@ -64,8 +64,8 @@ export const Expenses = () => {
     loadExpenses();
   }, []);
 
-  const loadExpenses = () => {
-    const data = expenseStore.getExpenses();
+  const loadExpenses = async () => {
+    const data = await expenseStore.getExpenses();
     setExpenses(data);
     setFilteredExpenses(data);
   };
@@ -213,9 +213,9 @@ export const Expenses = () => {
   ).slice(0, 10);
 
   // 지출 삭제
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('정말로 이 지출 내역을 삭제하시겠습니까?')) {
-      const success = expenseStore.deleteExpense(id);
+      const success = await expenseStore.deleteExpense(id);
       if (success) {
         loadExpenses();
         toast.success('지출 내역이 삭제되었습니다.');
@@ -226,8 +226,8 @@ export const Expenses = () => {
   };
 
   // 지출 수정 저장
-  const handleEditSave = (expense: ExpenseItem) => {
-    const updated = expenseStore.updateExpense(expense.id, expense);
+  const handleEditSave = async (expense: ExpenseItem) => {
+    const updated = await expenseStore.updateExpense(expense.id, expense);
     if (updated) {
       loadExpenses();
       setEditingExpense(null);

@@ -33,8 +33,8 @@ export const Dashboard = () => {
   const COLORS = ['#03C75A', '#FF8042', '#0088FE', '#00C49F', '#FFBB28', '#FF0080', '#8884D8'];
 
   // 월별 트렌드 데이터 생성
-  const generateMonthlyData = () => {
-    const expenses = expenseStore.getExpenses();
+  const generateMonthlyData = async () => {
+    const expenses = await expenseStore.getExpenses();
     const monthlyStats: Record<string, { month: string; 지출: number; 수입: number }> = {};
     
     // 최근 6개월 데이터 초기화
@@ -62,8 +62,8 @@ export const Dashboard = () => {
   };
 
   // 카테고리별 파이차트 데이터 생성
-  const generateCategoryData = () => {
-    const expenses = expenseStore.getExpenses();
+  const generateCategoryData = async () => {
+    const expenses = await expenseStore.getExpenses();
     const currentMonth = new Date().toISOString().slice(0, 7);
     const thisMonthExpenses = expenses.filter(e => 
       e.date.startsWith(currentMonth) && e.type !== 'income'
@@ -82,40 +82,46 @@ export const Dashboard = () => {
 
   useEffect(() => {
     // 통계 데이터 로드
-    const expenseStats = expenseStore.getExpenseStats();
-    setStats(expenseStats);
+    const loadData = async () => {
+      const expenseStats = await expenseStore.getExpenseStats();
+      setStats(expenseStats);
 
-    // 차트 데이터 생성
-    setMonthlyData(generateMonthlyData());
-    setCategoryData(generateCategoryData());
+      // 차트 데이터 생성
+      const monthlyData = await generateMonthlyData();
+      const categoryData = await generateCategoryData();
+      setMonthlyData(monthlyData);
+      setCategoryData(categoryData);
 
-    // 최근 대화 내역 로드
-    const chatSessions = expenseStore.getChatSessions();
-    const recentChatData = chatSessions.slice(0, 3).map(session => {
-      const lastUserMessage = session.messages
-        .slice()
-        .reverse()
-        .find(msg => msg.type === 'user');
-      
-      const lastAiMessage = session.messages
-        .slice()
-        .reverse()
-        .find(msg => msg.type === 'ai' && msg.data);
+      // 최근 대화 내역 로드
+      const chatSessions = expenseStore.getChatSessions();
+      const recentChatData = chatSessions.slice(0, 3).map(session => {
+        const lastUserMessage = session.messages
+          .slice()
+          .reverse()
+          .find(msg => msg.type === 'user');
+        
+        const lastAiMessage = session.messages
+          .slice()
+          .reverse()
+          .find(msg => msg.type === 'ai' && msg.data);
 
-      return {
-        time: new Date(session.lastMessageAt).toLocaleString('ko-KR', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        message: lastUserMessage?.content || '대화 없음',
-        result: lastAiMessage?.data 
-          ? `${lastAiMessage.data.category} > ${lastAiMessage.data.subcategory}, ${lastAiMessage.data.amount.toLocaleString()}원`
-          : '분석 결과 없음'
-      };
-    });
-    setRecentChats(recentChatData);
+        return {
+          time: new Date(session.lastMessageAt).toLocaleString('ko-KR', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          message: lastUserMessage?.content || '대화 없음',
+          result: lastAiMessage?.data 
+            ? `${lastAiMessage.data.category} > ${lastAiMessage.data.subcategory}, ${lastAiMessage.data.amount.toLocaleString()}원`
+            : '분석 결과 없음'
+        };
+      });
+      setRecentChats(recentChatData);
+    };
+
+    loadData();
   }, []);
 
   return (

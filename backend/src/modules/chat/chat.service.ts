@@ -16,7 +16,7 @@ export class ChatService {
     const chatSession = this.chatSessionRepository.create({
       ...createChatSessionDto,
       userId,
-      messages: createChatSessionDto.messages || [],
+      lastActivity: new Date(),
     });
 
     return await this.chatSessionRepository.save(chatSession);
@@ -26,7 +26,7 @@ export class ChatService {
   async findAll(userId: string): Promise<ChatSession[]> {
     return await this.chatSessionRepository.find({
       where: { userId },
-      order: { lastMessageAt: 'DESC' },
+      order: { lastActivity: 'DESC' },
     });
   }
 
@@ -47,7 +47,7 @@ export class ChatService {
   async getCurrentSession(userId: string): Promise<ChatSession | null> {
     return await this.chatSessionRepository.findOne({
       where: { userId },
-      order: { lastMessageAt: 'DESC' },
+      order: { lastActivity: 'DESC' },
     });
   }
 
@@ -56,7 +56,7 @@ export class ChatService {
     const chatSession = await this.findOne(id, userId);
 
     Object.assign(chatSession, updateChatSessionDto);
-    chatSession.lastMessageAt = new Date();
+    chatSession.lastActivity = new Date();
 
     return await this.chatSessionRepository.save(chatSession);
   }
@@ -65,24 +65,8 @@ export class ChatService {
   async addMessage(id: string, addMessageDto: AddMessageDto, userId: string): Promise<ChatSession> {
     const chatSession = await this.findOne(id, userId);
 
-    const newMessage = {
-      id: Date.now().toString(),
-      type: addMessageDto.type,
-      content: addMessageDto.content,
-      timestamp: new Date(),
-      data: addMessageDto.data,
-    };
-
-    chatSession.messages = [...chatSession.messages, newMessage];
     chatSession.lastMessage = addMessageDto.content;
-    chatSession.lastMessageAt = new Date();
-
-    // 제목이 기본값이면 첫 번째 사용자 메시지로 업데이트
-    if (chatSession.title === '새로운 대화' && addMessageDto.type === 'user') {
-      chatSession.title = addMessageDto.content.length > 30 
-        ? addMessageDto.content.substring(0, 30) + '...'
-        : addMessageDto.content;
-    }
+    chatSession.lastActivity = new Date();
 
     return await this.chatSessionRepository.save(chatSession);
   }
@@ -95,21 +79,16 @@ export class ChatService {
 
   // 세션의 메시지 히스토리 조회 (OpenAI API용)
   async getConversationHistory(id: string, userId: string, limit: number = 10): Promise<Array<{role: 'user' | 'assistant', content: string}>> {
-    const chatSession = await this.findOne(id, userId);
-    
-    return chatSession.messages
-      .slice(-limit)
-      .map(msg => ({
-        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
-        content: msg.content
-      }));
+    // 현재 데이터베이스 스키마에서 messages 필드가 없으므로 빈 배열 반환
+    // 필요시 frontend에서 localStorage를 사용하여 처리
+    return [];
   }
 
   // 세션 정리 (오래된 세션 삭제)
   async cleanupOldSessions(userId: string, keepCount: number = 10): Promise<void> {
     const sessions = await this.chatSessionRepository.find({
       where: { userId },
-      order: { lastMessageAt: 'DESC' },
+      order: { lastActivity: 'DESC' },
       skip: keepCount,
     });
 

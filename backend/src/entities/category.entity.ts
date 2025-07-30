@@ -12,9 +12,8 @@ import { User } from './user.entity';
 import { Expense } from './expense.entity';
 
 @Entity('categories')
-@Index('IDX_category_user', ['userId'])
-@Index('IDX_category_user_name', ['userId', 'name'])
-@Index('IDX_category_parent', ['parentId'])
+@Index('idx_categories_user', ['userId'])
+@Index('idx_categories_parent', ['parentId'])
 export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -36,9 +35,6 @@ export class Category {
 
   @Column({ default: false })
   isSystem: boolean;
-
-  @Column({ default: false })
-  isIncome: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

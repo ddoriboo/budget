@@ -18,6 +18,9 @@ import { Category } from './entities/category.entity';
 import { ChatSession } from './entities/chat-session.entity';
 import { ExcelUpload } from './entities/excel-upload.entity';
 
+// Config
+import { SnakeNamingStrategy } from './config/naming.strategy';
+
 @Module({
   imports: [
     // 환경 설정
@@ -35,6 +38,7 @@ import { ExcelUpload } from './entities/excel-upload.entity';
         entities: [User, Expense, Category, ChatSession, ExcelUpload],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
+        namingStrategy: new SnakeNamingStrategy(),
         ssl: configService.get('NODE_ENV') === 'production' ? { 
           rejectUnauthorized: false,
           sslmode: 'require'

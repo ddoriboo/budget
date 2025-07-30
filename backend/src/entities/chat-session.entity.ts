@@ -17,20 +17,14 @@ export class ChatSession {
   @Column()
   userId: string;
 
-  @Column({ length: 200, default: '새로운 대화' })
-  title: string;
-
-  @Column({ type: 'jsonb', default: '[]' })
-  messages: Record<string, any>[];
-
   @Column({ type: 'jsonb', default: '{}' })
   context: Record<string, any>;
 
   @Column({ type: 'text', nullable: true })
   lastMessage?: string;
 
-  @UpdateDateColumn()
-  lastMessageAt: Date;
+  @Column({ name: 'last_activity' })
+  lastActivity: Date;
 
   @CreateDateColumn()
   createdAt: Date;

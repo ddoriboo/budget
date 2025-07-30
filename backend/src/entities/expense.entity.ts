@@ -12,10 +12,9 @@ import { User } from './user.entity';
 import { Category } from './category.entity';
 
 @Entity('expenses')
-@Index('IDX_expense_user_date', ['userId', 'expenseDate'])
-@Index('IDX_expense_user_category', ['userId', 'categoryId'])
-@Index('IDX_expense_date', ['expenseDate'])
-@Index('IDX_expense_amount', ['amount'])
+@Index('idx_expenses_user_date', ['userId', 'expenseDate'])
+@Index('idx_expenses_category', ['userId', 'categoryId'])
+@Index('idx_expenses_conversation', ['conversationId'])
 export class Expense {
   @PrimaryGeneratedColumn('uuid')
   id: string;

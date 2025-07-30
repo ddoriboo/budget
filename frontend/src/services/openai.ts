@@ -199,6 +199,7 @@ export const analyzeExpenseMessage = async (
 
     const systemPrompt = `
 You are a Korean expense tracking AI. Analyze user messages and extract ALL expense/income data.
+Your response must be in JSON format.
 
 📅 DATE MAPPING (USE EXACTLY AS SHOWN):
 Today: ${today}
@@ -231,7 +232,7 @@ Analysis:
 - 4 items found: 삼겹살(20000), 스벅(5000), 이마트(30000), 지하철(2000)
 - Create 4 expense objects
 
-Output:
+Output JSON:
 {
   "expenses": [
     {
@@ -288,6 +289,8 @@ Income: 급여, 부수입, 기타수입
 3. Numbers must match!
 4. Each item gets its own object
 5. Use correct date mapping
+
+Always return valid JSON format with "expenses" array and "clarification_needed" boolean.
 
 ${analyzeConversationContext(message, conversationHistory)}
 `;

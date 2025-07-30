@@ -3,6 +3,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { analyzeExpenseMessage } from '@/services/openai';
 import { expenseStore, ChatSession } from '@/store/expenseStore';
+import { getCategoryDisplay } from '@/utils/categoryUtils';
 
 interface Message {
   id: string;
@@ -335,7 +336,7 @@ export const Chat = () => {
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-600">카테고리:</span>
-                                <span className="font-medium">{transaction.category} {'>'} {transaction.subcategory}</span>
+                                <span className="font-medium">{getCategoryDisplay(transaction.category, transaction.subcategory)}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-600">금액:</span>
@@ -382,8 +383,8 @@ export const Chat = () => {
                           <span className="font-medium">{message.data.place}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">카테고리:</span>
-                          <span className="font-medium">{message.data.category} {'>'} {message.data.subcategory}</span>
+                          <span className="text-gray-600">카테곦0리:</span>
+                          <span className="font-medium">{getCategoryDisplay(message.data.category, message.data.subcategory)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">금액:</span>

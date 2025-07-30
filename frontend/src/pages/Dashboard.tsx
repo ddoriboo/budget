@@ -19,6 +19,7 @@ import {
 import { StatsCardSkeleton, ChartSkeleton, RecentChatSkeleton } from '@/components/Skeletons/ChartSkeleton';
 import { MobileOptimizedChart, MobileTooltip } from '@/components/Charts/MobileOptimizedChart';
 import { motion } from 'framer-motion';
+import { getCategoryInfo, getCategoryDisplay, getChartColors } from '@/utils/categoryUtils';
 
 export const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -35,8 +36,8 @@ export const Dashboard = () => {
   const [isChartsLoading, setIsChartsLoading] = useState(true);
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
 
-  // 차트 색상
-  const COLORS = ['#03C75A', '#FF8042', '#0088FE', '#00C49F', '#FFBB28', '#FF0080', '#8884D8'];
+  // 차트 색상 (카테고리별 색상 사용)
+  const COLORS = getChartColors();
 
   // 월별 트렌드 데이터 생성
   const generateMonthlyData = async () => {
@@ -81,9 +82,14 @@ export const Dashboard = () => {
     }, {} as Record<string, number>);
 
     return Object.entries(categoryStats)
-      .map(([name, value]) => ({ name, value }))
+      .map(([name, value]) => ({ 
+        name, 
+        value,
+        displayName: getCategoryDisplay(name),
+        categoryInfo: getCategoryInfo(name)
+      }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 7); // 상위 7개 카테고리만
+      .slice(0, 8); // 상위 8개 카테고리만
   };
 
   useEffect(() => {
@@ -128,7 +134,7 @@ export const Dashboard = () => {
             }),
             message: lastUserMessage?.content || '대화 없음',
             result: lastAiMessage?.data 
-              ? `${lastAiMessage.data.category} > ${lastAiMessage.data.subcategory}, ${lastAiMessage.data.amount.toLocaleString()}원`
+              ? `${getCategoryDisplay(lastAiMessage.data.category, lastAiMessage.data.subcategory)}, ${lastAiMessage.data.amount.toLocaleString()}원`
               : '분석 결과 없음'
           };
         });
@@ -370,10 +376,15 @@ export const Dashboard = () => {
                       onMouseLeave={() => setHoveredSegment(null)}
                     >
                       <div 
-                        className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                      ></div>
-                      <span className="truncate">{entry.name}</span>
+                        className="w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center text-sm"
+                        style={{ 
+                          backgroundColor: entry.categoryInfo?.color || COLORS[index % COLORS.length],
+                          color: 'white'
+                        }}
+                      >
+                        {entry.categoryInfo?.emoji || '📊'}
+                      </div>
+                      <span className="truncate font-medium">{entry.displayName || entry.name}</span>
                       <span className="ml-auto text-gray-600 font-medium">
                         ₩{entry.value.toLocaleString()}
                       </span>

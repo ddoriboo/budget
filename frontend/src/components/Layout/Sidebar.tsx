@@ -52,29 +52,29 @@ export const Sidebar = () => {
   const balance = stats.monthlyIncome - stats.totalAmount;
 
   return (
-    <div className="w-80 bg-gray-600 text-white flex flex-col">
+    <div className="w-64 lg:w-80 bg-gray-600 text-white flex flex-col h-screen overflow-hidden">
       {/* 로고 */}
-      <div className="p-6 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-primary-400">머니챗</h1>
-        <p className="text-gray-300 text-sm mt-1">대화형 가계부</p>
+      <div className="p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
+        <h1 className="text-xl lg:text-2xl font-bold text-primary-400">머니챗</h1>
+        <p className="text-gray-300 text-xs lg:text-sm mt-1">대화형 가계부</p>
       </div>
 
       {/* 자산 현황 요약 */}
-      <div className="p-6 border-b border-gray-700">
-        <div className="space-y-4">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-300">이번 달 지출</div>
-            <div className="text-2xl font-bold text-red-400">₩{stats.totalAmount.toLocaleString()}</div>
+      <div className="p-3 lg:p-6 border-b border-gray-700 flex-shrink-0">
+        <div className="space-y-3 lg:space-y-4">
+          <div className="bg-gray-700 rounded-lg p-3 lg:p-4">
+            <div className="text-xs lg:text-sm text-gray-300">이번 달 지출</div>
+            <div className="text-lg lg:text-2xl font-bold text-red-400">₩{stats.totalAmount.toLocaleString()}</div>
             <div className="text-xs text-gray-400 mt-1">{stats.totalExpenses}건의 지출</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-300">이번 달 수입</div>
-            <div className="text-2xl font-bold text-primary-400">₩{stats.monthlyIncome.toLocaleString()}</div>
+          <div className="bg-gray-700 rounded-lg p-3 lg:p-4">
+            <div className="text-xs lg:text-sm text-gray-300">이번 달 수입</div>
+            <div className="text-lg lg:text-2xl font-bold text-primary-400">₩{stats.monthlyIncome.toLocaleString()}</div>
             <div className="text-xs text-gray-400 mt-1">고정 수입</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-300">잔액</div>
-            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-primary-400' : 'text-red-400'}`}>
+          <div className="bg-gray-700 rounded-lg p-3 lg:p-4">
+            <div className="text-xs lg:text-sm text-gray-300">잔액</div>
+            <div className={`text-lg lg:text-2xl font-bold ${balance >= 0 ? 'text-primary-400' : 'text-red-400'}`}>
               ₩{balance.toLocaleString()}
             </div>
             <div className="text-xs text-gray-400 mt-1">
@@ -85,22 +85,22 @@ export const Sidebar = () => {
       </div>
 
       {/* 네비게이션 메뉴 */}
-      <nav className="flex-1 p-6">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-3 lg:p-6 overflow-y-auto">
+        <ul className="space-y-1 lg:space-y-2">
           {navigation.map((item) => (
             <li key={item.name}>
               <NavLink
                 to={item.href}
                 className={({ isActive }) =>
-                  `flex items-center px-4 py-3 rounded-lg transition-colors ${
+                  `flex items-center px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary text-white'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`
                 }
               >
-                <item.icon className="w-5 h-5 mr-3" />
-                {item.name}
+                <item.icon className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 flex-shrink-0" />
+                <span className="text-sm lg:text-base truncate">{item.name}</span>
               </NavLink>
             </li>
           ))}
@@ -108,14 +108,14 @@ export const Sidebar = () => {
       </nav>
 
       {/* 하단 정보 */}
-      <div className="p-6 border-t border-gray-700">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+      <div className="p-3 lg:p-6 border-t border-gray-700 flex-shrink-0">
+        <div className="flex items-center min-w-0">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-white text-sm font-medium">김</span>
           </div>
-          <div className="ml-3">
-            <div className="text-sm font-medium">김머니</div>
-            <div className="text-xs text-gray-400">kim@example.com</div>
+          <div className="ml-2 lg:ml-3 min-w-0 flex-1">
+            <div className="text-sm font-medium truncate">김머니</div>
+            <div className="text-xs text-gray-400 truncate">kim@example.com</div>
           </div>
         </div>
       </div>

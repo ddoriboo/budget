@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import { analyzeExpenseMessage } from '@/services/openai';
 import { expenseStore, ChatSession } from '@/store/expenseStore';
 import { getCategoryDisplay } from '@/utils/categoryUtils';
+import { orchestrateChat, OrchestrationResult } from '@/services/chatOrchestrator';
+import { UserIntent } from '@/services/intentAnalysis';
 
 interface Message {
   id: string;
@@ -57,18 +59,21 @@ export const Chat = () => {
           content: msg.content
         }));
 
-      // 실제 OpenAI API 호출 (컨텍스트 포함)
-      const analysisResult = await analyzeExpenseMessage(currentInput, conversationHistory);
+      // LLM Orchestration을 통한 분석
+      const orchestrationResult: OrchestrationResult = await orchestrateChat(currentInput, conversationHistory);
       
-      console.log('분석 결과 상세:', {
-        success: analysisResult.success,
-        expensesLength: analysisResult.expenses?.length || 0,
-        expenses: analysisResult.expenses,
-        clarificationNeeded: analysisResult.clarification_needed,
-        clarificationMessage: analysisResult.clarification_message
+      console.log('Orchestration 결과 상세:', {
+        success: orchestrationResult.success,
+        intent: orchestrationResult.intent,
+        actionType: orchestrationResult.actionType,
+        data: orchestrationResult.data
       });
 
-      if (analysisResult.success && analysisResult.expenses.length > 0) {
+      if (orchestrationResult.success) {
+        // Intent에 따른 처리
+        if (orchestrationResult.intent === UserIntent.EXPENSE_INCOME && orchestrationResult.data?.expenses) {
+          // 기존 수입/지출 처리 로직
+          const analysisResult = orchestrationResult.data;
         // 여러 개의 거래가 있는 경우 모두 표시
         if (analysisResult.expenses.length === 1) {
           // 단일 거래 처리 (기존 로직)
@@ -100,8 +105,8 @@ export const Chat = () => {
           expenseStore.addMessageToSession(currentSession.id, aiResponse);
         } else {
           // 복수 거래 처리
-          const expenseCount = analysisResult.expenses.filter(e => e.type === 'expense').length;
-          const incomeCount = analysisResult.expenses.filter(e => e.type === 'income').length;
+          const expenseCount = analysisResult.expenses.filter((e: any) => e.type === 'expense').length;
+          const incomeCount = analysisResult.expenses.filter((e: any) => e.type === 'income').length;
           
           let summaryText = `"${currentInput}"를 분석했어요! `;
           if (expenseCount > 0 && incomeCount > 0) {
@@ -129,12 +134,28 @@ export const Chat = () => {
           // 세션에 AI 응답 추가
           expenseStore.addMessageToSession(currentSession.id, aiResponse);
         }
+        } else {
+          // 다른 Intent들 (예산 설정, 분석 요청 등)
+          const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'ai',
+            content: orchestrationResult.response,
+            timestamp: new Date(),
+            data: orchestrationResult.data
+          };
+          
+          const finalMessages = [...updatedMessages, aiResponse];
+          setMessages(finalMessages);
+          
+          // 세션에 AI 응답 추가
+          expenseStore.addMessageToSession(currentSession.id, aiResponse);
+        }
         
-      } else if (analysisResult.clarification_needed) {
+      } else if (orchestrationResult.clarificationNeeded) {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: analysisResult.clarification_message || '죄송해요, 입력하신 내용을 정확히 이해하지 못했어요. 좀 더 구체적으로 말씀해주시겠어요?',
+          content: orchestrationResult.clarificationMessage || orchestrationResult.response,
           timestamp: new Date(),
         };
         
@@ -383,7 +404,7 @@ export const Chat = () => {
                           <span className="font-medium">{message.data.place}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">카테곦0리:</span>
+                          <span className="text-gray-600">카테고리:</span>
                           <span className="font-medium">{getCategoryDisplay(message.data.category, message.data.subcategory)}</span>
                         </div>
                         <div className="flex justify-between">

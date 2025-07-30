@@ -198,43 +198,47 @@ export const analyzeExpenseMessage = async (
     const thisMonth = parseRelativeDate('이번달');
 
     const systemPrompt = `
-!!! CRITICAL SYSTEM INSTRUCTIONS - MUST FOLLOW EXACTLY !!!
+You are a Korean expense tracking AI. Analyze user messages and extract ALL expense/income data.
 
-You are a Korean expense tracker AI. You MUST follow these rules EXACTLY:
+📅 DATE MAPPING (USE EXACTLY AS SHOWN):
+Today: ${today}
+어제 (yesterday): ${yesterday}
+그저께/그제 (day before yesterday): ${dayBeforeYesterday}
+그그저께 (3 days ago): ${threeDaysAgo}
+지난주/저번주 (last week): ${lastWeek}
+이번주 (this week start): ${thisWeekStart}
+지난달/저번달/전달 (last month): ${lastMonth}
+이번달/이달 (this month): ${thisMonth}
 
-RULE 1: DATE CALCULATIONS (NEVER VIOLATE THIS!)
-Current date: ${today}
-- "어제" (yesterday) = ${yesterday} ← USE THIS EXACT DATE
-- "오늘" (today) = ${today} ← USE THIS EXACT DATE  
-- "그저께" (day before yesterday) = ${dayBeforeYesterday} ← USE THIS EXACT DATE
-- "지난주" (last week) = ${lastWeek} ← USE THIS EXACT DATE
-- "지난달" (last month) = ${lastMonth} ← USE THIS EXACT DATE
+🔴 CRITICAL RULE #1: EXTRACT ALL TRANSACTIONS
+When user mentions multiple items, create SEPARATE expense object for EACH item.
+Example: "삼겹살 2만원, 커피 5천원, 마트 3만원" → Create 3 separate expense objects
 
-!!! WARNING: NEVER use ${today} when user says "어제" (yesterday) !!!
-!!! WARNING: ALWAYS use ${yesterday} when user says "어제" (yesterday) !!!
+🔴 CRITICAL RULE #2: USE EXACT DATES
+When user says "어제", use "${yesterday}", NOT "${today}"
 
-RULE 2: MULTIPLE TRANSACTIONS (MANDATORY!)
-If input contains multiple expenses (like "A 1만원, B 2만원, C 3만원"), you MUST create separate objects for EACH expense.
-Example: "삼겹살 2만원, 스벅 5천원" → CREATE 2 SEPARATE EXPENSE OBJECTS
+📝 PARSING STRATEGY:
+1. Split the message by commas, "그리고", "또", or natural breaks
+2. Identify EACH expense/income item separately
+3. Create individual object for EACH item
+4. Count your objects - must match number of items mentioned
 
-RULE 3: REQUIRED JSON FORMAT
-You MUST return JSON with expenses array containing ALL transactions found.
-
-PROCESSING EXAMPLE:
+💡 REAL EXAMPLE:
 Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
 
-STEP 1: Identify date = "어제" = ${yesterday} (NOT ${today}!)
-STEP 2: Find 4 transactions: 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원
-STEP 3: Create 4 separate expense objects
+Analysis:
+- Date: "어제" = ${yesterday}
+- 4 items found: 삼겹살(20000), 스벅(5000), 이마트(30000), 지하철(2000)
+- Create 4 expense objects
 
-REQUIRED OUTPUT:
+Output:
 {
   "expenses": [
     {
       "date": "${yesterday}",
       "amount": 20000,
       "category": "식비",
-      "subcategory": "점심", 
+      "subcategory": "점심",
       "place": "삼겹살집",
       "memo": "점심 삼겹살",
       "confidence": 0.9,
@@ -245,7 +249,7 @@ REQUIRED OUTPUT:
       "amount": 5000,
       "category": "식비",
       "subcategory": "음료",
-      "place": "스타벅스", 
+      "place": "스타벅스",
       "memo": "커피",
       "confidence": 0.95,
       "type": "expense"
@@ -256,7 +260,7 @@ REQUIRED OUTPUT:
       "category": "쇼핑",
       "subcategory": "생필품",
       "place": "이마트",
-      "memo": "장보기", 
+      "memo": "장보기",
       "confidence": 0.9,
       "type": "expense"
     },
@@ -266,46 +270,24 @@ REQUIRED OUTPUT:
       "category": "교통",
       "subcategory": "대중교통",
       "place": "지하철",
-      "memo": "지하철비",
-      "confidence": 0.95, 
+      "memo": "교통비",
+      "confidence": 0.95,
       "type": "expense"
     }
   ],
-  "clarification_needed": false,
-  "clarification_message": null
+  "clarification_needed": false
 }
 
-!!! FINAL VERIFICATION CHECKLIST !!!
-Before responding, verify:
-□ Did I use ${yesterday} for "어제" (NOT ${today})?
-□ Did I create separate objects for each transaction?
-□ Did I include ALL transactions mentioned?
-□ Is the JSON format correct?
+📊 CATEGORIES:
+Expense: 식비, 교통, 쇼핑, 문화/여가, 주거/통신, 건강/의료, 교육, 경조사, 기타
+Income: 급여, 부수입, 기타수입
 
-!!! ABSOLUTE MANDATORY RULES !!!
-
-TRANSACTION TYPE IDENTIFICATION:
-- Income keywords: 월급, 급여, 보너스, 용돈, 받았다, 들어옴, 입금, 수입
-- Expense keywords: 썼다, 샀다, 먹었다, 지출, 결제, 지불, 구입, 냈어
-
-EXPENSE CATEGORIES:
-- 식비 (Food): 음식, 카페, 레스토랑, 마트, 배달, 점심, 저녁, 간식
-- 교통 (Transport): 지하철, 버스, 택시, 주유, 주차비  
-- 쇼핑 (Shopping): 의류, 생활용품, 화장품, 전자제품, 이마트, 마트
-- 문화/여가 (Entertainment): 영화, 도서, 여행, 게임
-- 주거/통신 (Housing): 관리비, 인터넷, 휴대폰, 전기요금
-- 건강/의료 (Health): 병원, 약국, 건강식품
-
-INCOME CATEGORIES:  
-- 급여 (Salary): 월급, 급여, 보너스, 성과급
-- 부수입 (Side income): 프리랜서, 아르바이트, 부업
-- 기타수입 (Other): 용돈, 선물, 환급
-
-!!! FINAL MANDATORY CHECK BEFORE RESPONSE !!!
-1. Did I use correct date for "어제"? → MUST be ${yesterday}
-2. Did I separate ALL transactions? → Each expense = separate object  
-3. Did I include ALL amounts mentioned? → Count them carefully
-4. Is JSON valid? → Check syntax
+⚠️ VALIDATION CHECKLIST:
+1. Count items in input message
+2. Count objects in expenses array
+3. Numbers must match!
+4. Each item gets its own object
+5. Use correct date mapping
 
 ${analyzeConversationContext(message, conversationHistory)}
 `;
@@ -320,14 +302,14 @@ ${analyzeConversationContext(message, conversationHistory)}
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           ...conversationHistory,
           { role: 'user', content: message }
         ],
-        temperature: 0.1,
-        max_tokens: 1000,
+        temperature: 0.3,
+        max_tokens: 2000,
         response_format: { type: 'json_object' }
       }),
     });
@@ -351,14 +333,8 @@ ${analyzeConversationContext(message, conversationHistory)}
       clarificationMessage: result.clarification_message
     });
 
-    // 날짜 정규화
-    if (result.expenses) {
-      result.expenses.forEach((expense: any) => {
-        if (expense.date) {
-          expense.date = parseRelativeDate(expense.date);
-        }
-      });
-    }
+    // 날짜 정규화 제거 - OpenAI가 이미 올바른 날짜를 반환함
+    // 기존 parseRelativeDate 호출이 올바른 날짜를 망가뜨리는 문제 해결
 
     return {
       success: true,

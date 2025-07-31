@@ -1,4 +1,3 @@
-import { PlusIcon, ChatBubbleLeftRightIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { expenseStore } from '@/store/expenseStore';
@@ -10,7 +9,10 @@ import {
   CategoryDonutChart, 
   MonthlyTrendChart, 
   BudgetComparisonChart,
-  DailySpendingHeatmap 
+  DailySpendingHeatmap,
+  MainKPICard,
+  BudgetProgressBar,
+  InsightsCard
 } from '@/components/Charts/EChartsComponents';
 import { MobileOptimizedChart } from '@/components/Charts/MobileOptimizedChart';
 
@@ -27,7 +29,9 @@ export const Dashboard = () => {
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [budgetComparisonData, setBudgetComparisonData] = useState<any[]>([]);
+  const [budgetProgressData, setBudgetProgressData] = useState<any[]>([]);
   const [dailySpendingData, setDailySpendingData] = useState<[string, number][]>([]);
+  const [insightData, setInsightData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChartsLoading, setIsChartsLoading] = useState(true);
 
@@ -114,6 +118,68 @@ export const Dashboard = () => {
     return Object.entries(dailyStats).map(([date, amount]) => [date, amount] as [string, number]);
   };
 
+  // 예산 프로그레스 바 데이터 생성
+  const generateBudgetProgressData = () => {
+    const comparison = expenseStore.getCategoryBudgetComparison();
+    return comparison
+      .filter(item => item.amount > 0)
+      .map(item => {
+        const categoryInfo = getCategoryInfo(item.categoryName);
+        return {
+          category: getCategoryDisplay(item.categoryName),
+          budget: item.amount,
+          actual: item.actualSpent,
+          color: categoryInfo.color
+        };
+      })
+      .slice(0, 8); // 상위 8개만
+  };
+
+  // 인사이트 데이터 생성
+  const generateInsightData = async () => {
+    const expenses = await expenseStore.getExpenses();
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const lastMonthKey = lastMonth.toISOString().slice(0, 7);
+    
+    const thisMonthExpenses = expenses.filter(e => 
+      e.date.startsWith(currentMonth) && e.type === 'expense'
+    );
+    const lastMonthExpenses = expenses.filter(e => 
+      e.date.startsWith(lastMonthKey) && e.type === 'expense'
+    );
+    
+    // 카테고리별 지출 계산
+    const categoryStats = thisMonthExpenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topCategory = Object.entries(categoryStats)
+      .sort(([,a], [,b]) => b - a)[0];
+    
+    const totalThisMonth = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalLastMonth = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const averageDaily = totalThisMonth / new Date().getDate();
+    const monthComparison = totalLastMonth > 0 ? ((totalThisMonth - totalLastMonth) / totalLastMonth) * 100 : 0;
+    
+    return {
+      topCategory: topCategory ? getCategoryDisplay(topCategory[0]) : '없음',
+      topAmount: topCategory ? topCategory[1] : 0,
+      totalExpenses: totalThisMonth,
+      averageDaily,
+      lastMonthComparison: monthComparison
+    };
+  };
+
+  // 남은 일수 계산
+  const getDaysLeftInMonth = () => {
+    const now = new Date();
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return lastDay.getDate() - now.getDate();
+  };
+
   useEffect(() => {
     // 통계 데이터 로드
     const loadData = async () => {
@@ -135,12 +201,16 @@ export const Dashboard = () => {
           const monthlyData = await generateMonthlyData();
           const categoryData = await generateCategoryData();
           const budgetData = generateBudgetComparisonData();
+          const budgetProgressData = generateBudgetProgressData();
           const dailyData = await generateDailySpendingData();
+          const insightData = await generateInsightData();
           
           setMonthlyData(monthlyData);
           setCategoryData(categoryData);
           setBudgetComparisonData(budgetData);
+          setBudgetProgressData(budgetProgressData);
           setDailySpendingData(dailyData);
+          setInsightData(insightData);
           setIsChartsLoading(false);
         }, 300);
 
@@ -183,175 +253,36 @@ export const Dashboard = () => {
 
   return (
     <div className="mobile-container mobile-spacing">
-      {/* 웰컴 섹션 */}
-      <div className="gradient-primary rounded-xl p-4 sm:p-6 lg:p-8 text-white">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">안녕하세요, 김머니님! 👋</h1>
-        <p className="text-primary-100 text-base sm:text-lg">
-          오늘도 머니챗과 함께 스마트한 가계부 관리를 시작해보세요.
-        </p>
-      </div>
-
-      {/* 이번 달 요약 카드들 */}
-      <div className="mobile-grid gap-4 sm:gap-6">
-        {isLoading ? (
-          <>
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-          </>
-        ) : (
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="card p-4 sm:p-6"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">이번 달 지출</p>
-                  <p className="text-2xl font-bold text-red-500">₩{stats.totalAmount.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500 mt-1">{stats.totalExpenses}건의 지출</p>
-                </div>
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                  <span className="text-red-600 text-2xl">📉</span>
-                </div>
-              </div>
-              <div className="mt-4 bg-gray-100 rounded-full h-2">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: Math.min((stats.totalAmount / (stats.totalIncome || stats.totalAmount)) * 100, 100) + '%' }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className="bg-red-500 h-2 rounded-full"
-                ></motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="card p-4 sm:p-6"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">이번 달 수입</p>
-                  <p className="text-xl sm:text-2xl font-bold text-primary">₩{stats.totalIncome.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500 mt-1">수입 기록</p>
-                </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <span className="text-primary text-xl sm:text-2xl">📈</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="card p-4 sm:p-6"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">잔액</p>
-                  <p className={`text-2xl font-bold ${stats.totalIncome - stats.totalAmount >= 0 ? 'text-primary' : 'text-red-500'}`}>
-                    ₩{(stats.totalIncome - stats.totalAmount).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {stats.totalIncome - stats.totalAmount >= 0 ? '흑자' : '적자'}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <span className="text-blue-600 text-2xl">💰</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* 예산 요약 카드 */}
-            {stats.budgetSummary && stats.budgetSummary.totalBudget > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="card p-4 sm:p-6"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">이번 달 예산</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {((stats.budgetSummary.utilizationPercentage || 0)).toFixed(1)}%
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {stats.budgetSummary.totalSpent.toLocaleString()}원 / {stats.budgetSummary.totalBudget.toLocaleString()}원
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    stats.budgetSummary.utilizationPercentage > 100 
-                      ? 'bg-red-100 text-red-600' 
-                      : stats.budgetSummary.utilizationPercentage > 80 
-                      ? 'bg-yellow-100 text-yellow-600' 
-                      : 'bg-green-100 text-green-600'
-                  }`}>
-                    <span className="text-xl">
-                      {stats.budgetSummary.utilizationPercentage > 100 ? '⚠️' : 
-                       stats.budgetSummary.utilizationPercentage > 80 ? '⚡' : '✅'}
-                    </span>
-                  </div>
-                </div>
-                {stats.budgetSummary.overBudgetCategories > 0 && (
-                  <div className="mt-2 text-xs text-red-600">
-                    {stats.budgetSummary.overBudgetCategories}개 카테고리 예산 초과
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* 빠른 액션 버튼들 */}
-      <div className="card p-4 sm:p-6">
-        <h2 className="text-lg font-semibold mb-4">빠른 액션</h2>
-        <div className="mobile-grid gap-3 sm:gap-4">
-          <Link
-            to="/chat"
-            className="touch-button flex items-center p-4 border-2 border-dashed border-primary-300 rounded-lg hover:border-primary hover:bg-primary-50 active:bg-primary-100 transition-colors group min-h-[60px]"
-          >
-            <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary mr-3 flex-shrink-0" />
-            <div className="text-left">
-              <div className="font-medium text-gray-900 group-hover:text-primary text-sm sm:text-base">대화로 입력하기</div>
-              <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">"어제 스벅에서 5천원 썼어"</div>
-            </div>
-          </Link>
-
-          <Link
-            to="/excel"
-            className="touch-button flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 transition-colors group min-h-[60px]"
-          >
-            <DocumentArrowUpIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600 mr-3 flex-shrink-0" />
-            <div className="text-left">
-              <div className="font-medium text-gray-900 text-sm sm:text-base">엑셀 업로드</div>
-              <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">카드사 내역 한 번에 등록</div>
-            </div>
-          </Link>
-
-          <button className="touch-button flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 transition-colors group min-h-[60px]">
-            <PlusIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600 mr-3 flex-shrink-0" />
-            <div className="text-left">
-              <div className="font-medium text-gray-900 text-sm sm:text-base">직접 입력</div>
-              <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">전통적인 폼 입력</div>
-            </div>
-          </button>
+      {/* 메인 KPI 대시보드 */}
+      {isLoading ? (
+        <div className="animate-pulse">
+          <div className="h-48 bg-gray-200 rounded-xl mb-6"></div>
         </div>
-      </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-6"
+        >
+          <MainKPICard
+            income={stats.totalIncome}
+            expense={stats.totalAmount}
+            budget={stats.budgetSummary?.totalBudget || 0}
+            budgetUsed={stats.budgetSummary?.totalSpent || 0}
+            daysLeft={getDaysLeftInMonth()}
+          />
+        </motion.div>
+      )}
 
-      {/* 차트 섹션 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
+      {/* 주요 차트 섹션 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
         {/* 월별 지출 트렌드 */}
         <MobileOptimizedChart
-          title="월별 지출 트렌드"
+          title="📈 월별 수입 vs 지출 트렌드"
           isLoading={isChartsLoading}
+          height="h-80"
         >
           {monthlyData.length > 0 ? (
             <MonthlyTrendChart data={monthlyData} />
@@ -363,9 +294,9 @@ export const Dashboard = () => {
                 transition={{ duration: 0.5 }}
                 className="text-center"
               >
-                <p className="text-lg mb-2">📈</p>
-                <p className="text-sm">월별 데이터가 없습니다</p>
-                <p className="text-xs mt-1">지출을 입력하여 트렌드를 확인해보세요!</p>
+                <p className="text-4xl mb-3">📈</p>
+                <p className="text-base font-medium">월별 데이터가 없습니다</p>
+                <p className="text-sm mt-2 text-gray-400">지출을 입력하여 트렌드를 확인해보세요!</p>
               </motion.div>
             </div>
           )}
@@ -373,8 +304,9 @@ export const Dashboard = () => {
 
         {/* 카테고리별 지출 */}
         <MobileOptimizedChart
-          title="이번 달 카테고리별 지출"
+          title="🍕 이번 달 카테고리별 지출"
           isLoading={isChartsLoading}
+          height="h-80"
         >
           {categoryData.length > 0 ? (
             <CategoryDonutChart data={categoryData} />
@@ -386,62 +318,93 @@ export const Dashboard = () => {
                 transition={{ duration: 0.5 }}
                 className="text-center"
               >
-                <p className="text-lg mb-2">📊</p>
-                <p className="text-sm">이번 달 지출 데이터가 없습니다</p>
-                <p className="text-xs mt-1">채팅으로 지출을 입력해보세요!</p>
+                <p className="text-4xl mb-3">🍕</p>
+                <p className="text-base font-medium">지출 데이터가 없습니다</p>
+                <p className="text-sm mt-2 text-gray-400">채팅으로 지출을 입력해보세요!</p>
               </motion.div>
             </div>
           )}
         </MobileOptimizedChart>
       </div>
 
-      {/* 예산 관련 차트들 */}
-      {stats.budgetSummary && stats.budgetSummary.totalBudget > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* 예산 게이지 차트 */}
-          <MobileOptimizedChart
-            title="이번 달 예산 사용률"
-            isLoading={isChartsLoading}
-          >
-            <BudgetGaugeChart 
-              percentage={stats.budgetSummary.utilizationPercentage || 0}
-              amount={stats.budgetSummary.totalSpent || 0}
-              total={stats.budgetSummary.totalBudget || 0}
-            />
-          </MobileOptimizedChart>
-
-          {/* 예산 vs 실제 지출 비교 */}
-          {budgetComparisonData.length > 0 && (
-            <MobileOptimizedChart
-              title="카테고리별 예산 vs 실제 지출"
-              isLoading={isChartsLoading}
-            >
-              <BudgetComparisonChart data={budgetComparisonData} />
-            </MobileOptimizedChart>
-          )}
-        </div>
-      )}
-
-      {/* 일별 지출 히트맵 */}
-      {dailySpendingData.length > 0 && (
-        <MobileOptimizedChart
-          title="일별 지출 패턴"
-          isLoading={isChartsLoading}
-          height="h-48 sm:h-64"
+      {/* 예산 프로그레스 바 */}
+      {budgetProgressData.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-6"
         >
-          <DailySpendingHeatmap data={dailySpendingData} />
-        </MobileOptimizedChart>
+          <MobileOptimizedChart
+            title="🎯 카테고리별 예산 사용 현황"
+            isLoading={isChartsLoading}
+            height="h-64"
+          >
+            <BudgetProgressBar data={budgetProgressData} />
+          </MobileOptimizedChart>
+        </motion.div>
       )}
+
+      {/* 인사이트 & 빠른 액션 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        {/* 인사이트 카드 */}
+        {insightData && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <InsightsCard {...insightData} />
+          </motion.div>
+        )}
+
+        {/* 빠른 액션 */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="card p-6"
+        >
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">🚀 빠른 액션</h3>
+          <div className="space-y-3">
+            <Link
+              to="/chat"
+              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg transition-all group border border-blue-200"
+            >
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-white text-lg">💬</span>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 group-hover:text-blue-700">대화로 입력하기</div>
+                <div className="text-sm text-gray-500">"어제 스벅에서 5천원 썼어"</div>
+              </div>
+            </Link>
+
+            <Link
+              to="/excel"
+              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 rounded-lg transition-all group border border-green-200"
+            >
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-white text-lg">📊</span>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 group-hover:text-green-700">엑셀 업로드</div>
+                <div className="text-sm text-gray-500">카드사 내역 한 번에 등록</div>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
 
       {/* 최근 대화 내역 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="card p-4 sm:p-6"
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="card p-6"
       >
-        <h2 className="text-lg font-semibold mb-4">최근 대화 내역</h2>
-        <div className="space-y-4">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">💬 최근 대화 내역</h3>
+        <div className="space-y-3">
           {isLoading ? (
             <RecentChatSkeleton />
           ) : recentChats.length > 0 ? (
@@ -450,14 +413,14 @@ export const Dashboard = () => {
                 key={index} 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
-                className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
+                className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg hover:from-gray-100 hover:to-blue-100 transition-all cursor-pointer border border-gray-200 hover:border-blue-200"
               >
-                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
-                <div className="flex-1">
-                  <div className="text-sm text-gray-500">{item.time}</div>
-                  <div className="text-gray-900 mt-1">"{item.message}"</div>
-                  <div className="text-sm text-primary mt-1">→ {item.result}</div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-500 mb-1">{item.time}</div>
+                  <div className="text-gray-900 font-medium text-sm mb-1 truncate">"{item.message}"</div>
+                  <div className="text-sm text-blue-600 font-medium">→ {item.result}</div>
                 </div>
               </motion.div>
             ))
@@ -465,16 +428,20 @@ export const Dashboard = () => {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
               className="text-center py-8 text-gray-500"
             >
-              <p>아직 대화 내역이 없습니다.</p>
-              <p className="text-sm mt-1">채팅으로 첫 가계부를 입력해보세요!</p>
+              <p className="text-3xl mb-3">💬</p>
+              <p className="font-medium">아직 대화 내역이 없습니다</p>
+              <p className="text-sm mt-2 text-gray-400">채팅으로 첫 가계부를 입력해보세요!</p>
             </motion.div>
           )}
         </div>
-        <div className="mt-4 text-center">
-          <Link to="/chat" className="text-primary hover:text-primary-600 text-sm font-medium hover:underline transition-all">
+        <div className="mt-6 text-center">
+          <Link 
+            to="/chat" 
+            className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
+          >
             모든 대화 보기 →
           </Link>
         </div>

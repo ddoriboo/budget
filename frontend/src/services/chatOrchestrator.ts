@@ -78,6 +78,8 @@ const handleExpenseIncome = async (
   
   const expenseResult = await analyzeExpenseMessage(message, conversationHistory);
   
+  console.log('💰 수입/지출 분석 결과:', expenseResult);
+  
   if (expenseResult.success && expenseResult.expenses.length > 0) {
     // 예산에 반영 (지출인 경우)
     expenseResult.expenses.forEach(expense => {

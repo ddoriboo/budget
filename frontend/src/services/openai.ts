@@ -179,6 +179,8 @@ export const analyzeExpenseMessage = async (
 }> => {
   try {
     // API 키 확인
+    console.log('🔑 OpenAI API Key 상태:', OPENAI_API_KEY ? '설정됨' : '미설정', OPENAI_API_KEY === 'your_openai_api_key_here' ? '(기본값)' : '');
+    
     if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
       console.log('⚠️ OpenAI API 키가 없어서 간단한 지출 분석을 사용합니다.');
       return analyzeExpenseFallback(message);
@@ -360,11 +362,15 @@ const analyzeExpenseFallback = (message: string): {
   clarification_needed: boolean;
   clarification_message?: string;
 } => {
+  console.log('🔧 Fallback 지출 분석 시작:', message);
+  
   const lowerMessage = message.toLowerCase();
   const expenses: ExpenseData[] = [];
   
   // 금액 추출
   const amountMatches = message.match(/(\d+)([만천]?)원/g);
+  console.log('💵 찾은 금액들:', amountMatches);
+  
   if (!amountMatches || amountMatches.length === 0) {
     return {
       success: false,
@@ -390,52 +396,77 @@ const analyzeExpenseFallback = (message: string): {
   const isIncome = lowerMessage.includes('월급') || lowerMessage.includes('받았') || 
                    lowerMessage.includes('수입') || lowerMessage.includes('들어왔');
   
-  // 각 금액에 대해 거래 생성
-  amountMatches.forEach((amountStr) => {
+  // 메시지를 쉼표로 분리해서 각 항목 분석
+  const items = message.split(',').map(item => item.trim());
+  console.log('🔍 분리된 항목들:', items);
+  
+  items.forEach((item) => {
+    const itemLower = item.toLowerCase();
+    
+    // 각 항목에서 금액 찾기
+    const itemAmountMatch = item.match(/(\d+)([만천]?)원/);
+    if (!itemAmountMatch) return;
+    
     // 금액 파싱
     let amount = 0;
-    const numMatch = amountStr.match(/(\d+)([만천]?)원/);
-    if (numMatch) {
-      const num = parseInt(numMatch[1]);
-      if (numMatch[2] === '만') amount = num * 10000;
-      else if (numMatch[2] === '천') amount = num * 1000;
-      else amount = num;
-    }
+    const num = parseInt(itemAmountMatch[1]);
+    if (itemAmountMatch[2] === '만') amount = num * 10000;
+    else if (itemAmountMatch[2] === '천') amount = num * 1000;
+    else amount = num;
     
     // 카테고리 추출
     let category = isIncome ? '급여' : '기타';
     let subcategory = isIncome ? '월급' : '기타';
+    let place = '';
+    let memo = '';
     
     if (!isIncome) {
-      if (lowerMessage.includes('스타벅스') || lowerMessage.includes('커피') || lowerMessage.includes('카페')) {
+      // 스타벅스, 커피
+      if (itemLower.includes('스타벅스') || itemLower.includes('스벅')) {
         category = '식비';
         subcategory = '카페/간식';
-      } else if (lowerMessage.includes('점심') || lowerMessage.includes('저녁') || lowerMessage.includes('아침')) {
+        place = '스타벅스';
+        if (itemLower.includes('아메리카노')) memo = '아메리카노';
+      } 
+      // 점심, 저녁, 식사
+      else if (itemLower.includes('점심') || itemLower.includes('저녁') || itemLower.includes('아침')) {
         category = '식비';
         subcategory = '외식';
-      } else if (lowerMessage.includes('마트') || lowerMessage.includes('장보기')) {
+        place = '식당';
+        if (itemLower.includes('삼겹살')) {
+          place = '고기집';
+          memo = '삼겹살';
+        }
+      }
+      // 마트
+      else if (itemLower.includes('이마트') || itemLower.includes('마트')) {
         category = '식비';
         subcategory = '식료품';
-      } else if (lowerMessage.includes('택시') || lowerMessage.includes('버스') || lowerMessage.includes('지하철')) {
+        place = itemLower.includes('이마트') ? '이마트' : '마트';
+      }
+      // 교통
+      else if (itemLower.includes('택시') || itemLower.includes('버스') || itemLower.includes('지하철')) {
         category = '교통';
         subcategory = '대중교통';
-      } else if (lowerMessage.includes('영화') || lowerMessage.includes('게임')) {
+        place = itemLower.includes('택시') ? '택시' : 
+                itemLower.includes('버스') ? '버스' : '지하철';
+      }
+      // 영화
+      else if (itemLower.includes('영화') || itemLower.includes('cgv')) {
         category = '문화/여가';
         subcategory = '엔터테인먼트';
+        place = 'CGV';
+        if (itemLower.includes('팝콘')) memo = '팝콘';
+      }
+      // 커피
+      else if (itemLower.includes('커피') || itemLower.includes('카페')) {
+        category = '식비';
+        subcategory = '카페/간식';
+        place = '카페';
       }
     }
     
-    // 장소 추출
-    let place = category;
-    if (lowerMessage.includes('스타벅스')) place = '스타벅스';
-    else if (lowerMessage.includes('이마트')) place = '이마트';
-    else if (lowerMessage.includes('cgv')) place = 'CGV';
-    
-    // 품목 추출
-    let memo = '';
-    if (lowerMessage.includes('아메리카노')) memo = '아메리카노';
-    else if (lowerMessage.includes('삼겹살')) memo = '삼겹살';
-    else if (lowerMessage.includes('팝콘')) memo = '팝콘';
+    if (!place) place = category;
     
     expenses.push({
       date,
@@ -448,6 +479,9 @@ const analyzeExpenseFallback = (message: string): {
       type: isIncome ? 'income' : 'expense'
     });
   });
+  
+  console.log('✅ Fallback 분석 완료. 거래 수:', expenses.length);
+  console.log('📊 분석된 거래들:', expenses);
   
   return {
     success: true,

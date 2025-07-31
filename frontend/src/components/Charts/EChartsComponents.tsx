@@ -93,7 +93,7 @@ export const BudgetGaugeChart = ({ percentage, amount, total }: { percentage: nu
   );
 };
 
-// 카테고리별 도넛 차트 - 확대 및 개선
+// 카테고리별 도넛 차트 - 컨테이너 최적화
 export const CategoryDonutChart = ({ data }: { data: Array<{ name: string; value: number; color: string }> }) => {
   const totalAmount = data.reduce((sum, item) => sum + item.value, 0);
   
@@ -114,22 +114,22 @@ export const CategoryDonutChart = ({ data }: { data: Array<{ name: string; value
     },
     legend: {
       type: 'scroll',
-      top: '85%',
+      top: '75%',
       left: 'center',
       selectedMode: false,
-      itemWidth: 14,
-      itemHeight: 14,
-      itemGap: 20,
+      itemWidth: 12,
+      itemHeight: 12,
+      itemGap: 15,
       textStyle: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 500,
         color: '#374151'
       },
       formatter: function(name: string) {
         const item = data.find(d => d.name === name);
         if (item) {
-          const formattedValue = item.value >= 10000 ? `${(item.value / 10000).toFixed(1)}만` : `${item.value.toLocaleString()}`;
-          return `${name} (${formattedValue}원)`;
+          const formattedValue = item.value >= 10000 ? `${(item.value / 10000).toFixed(0)}만` : `${Math.floor(item.value / 1000)}k`;
+          return `${name} ${formattedValue}`;
         }
         return name;
       }
@@ -138,13 +138,13 @@ export const CategoryDonutChart = ({ data }: { data: Array<{ name: string; value
       {
         name: '카테고리별 지출',
         type: 'pie',
-        radius: ['45%', '75%'], // 크기 확대 (기존 40%-70% → 45%-75%)
-        center: ['50%', '40%'], // 중심을 위로 이동해서 legend 공간 확보
+        radius: ['40%', '65%'], // 크기 조정으로 컨테이너에 맞춤
+        center: ['50%', '35%'], // 중심 위치 조정
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 8,
+          borderRadius: 6,
           borderColor: '#fff',
-          borderWidth: 3
+          borderWidth: 2
         },
         label: {
           show: false
@@ -152,22 +152,22 @@ export const CategoryDonutChart = ({ data }: { data: Array<{ name: string; value
         emphasis: {
           label: {
             show: true,
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 'bold',
             color: '#1F2937',
             formatter: function(params: any) {
               const formattedValue = params.value >= 10000 ? `${(params.value / 10000).toFixed(1)}만원` : `${params.value.toLocaleString()}원`;
-              return `${params.name}\n${formattedValue}\n${params.percent}%`;
+              return `${params.name}\n${formattedValue}`;
             },
-            lineHeight: 20
+            lineHeight: 18
           },
           itemStyle: {
-            shadowBlur: 15,
+            shadowBlur: 10,
             shadowOffsetX: 0,
             shadowColor: 'rgba(0, 0, 0, 0.3)'
           },
           scale: true,
-          scaleSize: 5
+          scaleSize: 3
         },
         labelLine: {
           show: false
@@ -179,35 +179,36 @@ export const CategoryDonutChart = ({ data }: { data: Array<{ name: string; value
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: item.color },
               { offset: 0.7, color: adjustColor(item.color, -15) },
-              { offset: 1, color: adjustColor(item.color, -30) }
+              { offset: 1, color: adjustColor(item.color, -25) }
             ])
           }
         }))
       },
-      // 중앙 총합 표시용 숨겨진 시리즈
+      // 중앙 총합 표시
       {
         type: 'pie',
-        radius: ['0%', '40%'],
-        center: ['50%', '40%'],
+        radius: ['0%', '35%'],
+        center: ['50%', '35%'],
         silent: true,
         label: {
           show: true,
           position: 'center',
-          fontSize: 24,
+          fontSize: 18,
           fontWeight: 'bold',
           color: '#1F2937',
           formatter: function() {
+            if (totalAmount === 0) return '지출 없음';
             const formattedTotal = totalAmount >= 10000 ? `${(totalAmount / 10000).toFixed(1)}만원` : `${totalAmount.toLocaleString()}원`;
             return `총 지출\n${formattedTotal}`;
           },
-          lineHeight: 30
+          lineHeight: 22
         },
         data: [{ value: 1, itemStyle: { color: 'transparent' } }]
       }
     ]
   };
 
-  return <ReactECharts option={option} style={{ height: '420px' }} />; // 높이 증가
+  return <ReactECharts option={option} style={{ height: '100%', minHeight: '320px' }} />;
 };
 
 // 월별 트렌드 차트 - Gradient Stacked Area Chart
@@ -480,8 +481,8 @@ export const DailySpendingHeatmap = ({ data }: { data: Array<[string, number]> }
   return <ReactECharts option={option} style={{ height: '200px' }} />;
 };
 
-// 메인 KPI 통합 카드
-export const MainKPICard = ({ 
+// 통합 Money Flow Card - 핀테크 스타일
+export const MoneyFlowCard = ({ 
   income, 
   expense, 
   budget, 
@@ -495,110 +496,139 @@ export const MainKPICard = ({
   daysLeft: number; 
 }) => {
   const remainingBudget = budget - budgetUsed;
-  const dailyAverage = remainingBudget > 0 && daysLeft > 0 ? remainingBudget / daysLeft : 0;
   const budgetUtilization = budget > 0 ? (budgetUsed / budget) * 100 : 0;
   const netWorth = income - expense;
+  const dailyAverage = remainingBudget > 0 && daysLeft > 0 ? remainingBudget / daysLeft : 0;
+  
+  // 시간 경과 vs 지출 경과 비교 (페이스 체크)
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const daysPassed = daysInMonth - daysLeft;
+  const timeProgress = (daysPassed / daysInMonth) * 100;
+  const spendingProgress = budgetUtilization;
+  const paceRatio = spendingProgress / timeProgress;
+  
+  // 월말 예측
+  const projectedSpending = budget > 0 ? (budgetUsed / daysPassed) * daysInMonth : expense * (daysInMonth / daysPassed);
+  const projectedOverrun = projectedSpending - budget;
 
-  const getStatusColor = () => {
-    if (budgetUtilization > 100) return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', accent: '#EF4444' };
-    if (budgetUtilization > 80) return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', accent: '#F59E0B' };
-    return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', accent: '#10B981' };
+  const getFlowStatus = () => {
+    if (paceRatio > 1.2) return { status: '위험', color: 'red', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' };
+    if (paceRatio > 1.0) return { status: '주의', color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' };
+    return { status: '양호', color: 'green', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' };
   };
 
-  const statusColor = getStatusColor();
+  const flowStatus = getFlowStatus();
+
+  const formatAmount = (amount: number) => {
+    return amount >= 10000 ? `${(amount / 10000).toFixed(1)}만` : Math.floor(amount).toLocaleString();
+  };
 
   return (
-    <div className={`card p-6 lg:p-8 ${statusColor.bg} ${statusColor.border} border-2`}>
+    <div className={`card p-6 lg:p-8 ${flowStatus.bg} ${flowStatus.border} border-2`}>
+      {/* 헤더 */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-gray-900">💰 이번 달 머니 플로우</h2>
+        <div className={`px-3 py-1 rounded-full text-sm font-medium ${flowStatus.bg} ${flowStatus.text} border ${flowStatus.border}`}>
+          🚦 {flowStatus.status}
+        </div>
+      </div>
+
+      {/* Money Flow 시각화 */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        {/* 1. 수입 */}
+        <div className="text-center p-4 bg-white rounded-lg border-2 border-green-200">
+          <div className="text-2xl mb-2">💰</div>
+          <div className="text-sm text-gray-600 mb-1">수입</div>
+          <div className="text-lg font-bold text-green-600">+{formatAmount(income)}원</div>
+        </div>
+
+        {/* Flow Arrow */}
+        <div className="hidden lg:flex items-center justify-center">
+          <div className="w-full h-0.5 bg-gray-300 relative">
+            <div className="absolute right-0 top-0 w-0 h-0 border-l-4 border-l-gray-300 border-t-2 border-b-2 border-t-transparent border-b-transparent transform -translate-y-1/2"></div>
+          </div>
+        </div>
+
+        {/* 2. 예산 */}
+        <div className="text-center p-4 bg-white rounded-lg border-2 border-blue-200">
+          <div className="text-2xl mb-2">🎯</div>
+          <div className="text-sm text-gray-600 mb-1">예산</div>
+          <div className="text-lg font-bold text-blue-600">{formatAmount(budget)}원</div>
+          <div className="text-xs text-gray-500 mt-1">{budgetUtilization.toFixed(0)}% 사용</div>
+        </div>
+
+        {/* Flow Arrow */}
+        <div className="hidden lg:flex items-center justify-center">
+          <div className="w-full h-0.5 bg-gray-300 relative">
+            <div className="absolute right-0 top-0 w-0 h-0 border-l-4 border-l-gray-300 border-t-2 border-b-2 border-t-transparent border-b-transparent transform -translate-y-1/2"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* 상세 분석 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 좌측: 수입/지출/순자산 */}
-        <div className="space-y-4">
-          <div className="text-center lg:text-left">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">이번 달 현황</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">💰 수입</span>
-                <span className="text-lg font-bold text-green-600">
-                  +{income >= 10000 ? `${(income / 10000).toFixed(1)}만` : income.toLocaleString()}원
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">💸 지출</span>
-                <span className="text-lg font-bold text-red-600">
-                  -{expense >= 10000 ? `${(expense / 10000).toFixed(1)}만` : expense.toLocaleString()}원
-                </span>
-              </div>
-              <div className="border-t pt-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">💎 순자산</span>
-                  <span className={`text-xl font-bold ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {netWorth >= 0 ? '+' : ''}{netWorth >= 10000 ? `${(netWorth / 10000).toFixed(1)}만` : netWorth.toLocaleString()}원
-                  </span>
-                </div>
-              </div>
+        {/* 페이스 체크 */}
+        <div className="bg-white rounded-lg p-4 border">
+          <h3 className="font-semibold text-gray-900 mb-3">📊 지출 페이스</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>시간 경과</span>
+              <span>{timeProgress.toFixed(0)}%</span>
             </div>
-          </div>
-        </div>
-
-        {/* 중앙: 예산 사용률 */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="relative w-32 h-32">
-            <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-              <circle
-                cx="60"
-                cy="60"
-                r="54"
-                fill="none"
-                stroke="#E5E7EB"
-                strokeWidth="8"
-              />
-              <circle
-                cx="60"
-                cy="60"
-                r="54"
-                fill="none"
-                stroke={statusColor.accent}
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${(budgetUtilization / 100) * 339.292} 339.292`}
-                className="transition-all duration-1000 ease-out"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-2xl font-bold ${statusColor.text}`}>
-                {budgetUtilization.toFixed(0)}%
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${timeProgress}%` }}></div>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>지출 진행</span>
+              <span className={spendingProgress > timeProgress ? 'text-red-600' : 'text-green-600'}>
+                {spendingProgress.toFixed(0)}%
               </span>
-              <span className="text-xs text-gray-500">예산 사용률</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full ${spendingProgress > timeProgress ? 'bg-red-500' : 'bg-green-500'}`}
+                style={{ width: `${Math.min(spendingProgress, 100)}%` }}
+              ></div>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-2 text-center">
-            {budget >= 10000 ? `${(budgetUsed / 10000).toFixed(1)}만` : budgetUsed.toLocaleString()}원 / {budget >= 10000 ? `${(budget / 10000).toFixed(1)}만` : budget.toLocaleString()}원
-          </p>
         </div>
 
-        {/* 우측: 남은 예산 & 일평균 */}
-        <div className="space-y-4">
-          <div className="text-center lg:text-right">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">예산 분석</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-600">🎯 남은 예산</p>
-                <p className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {remainingBudget >= 0 ? '' : '-'}{Math.abs(remainingBudget) >= 10000 ? `${(Math.abs(remainingBudget) / 10000).toFixed(1)}만` : Math.abs(remainingBudget).toLocaleString()}원
-                </p>
+        {/* 월말 예측 */}
+        <div className="bg-white rounded-lg p-4 border">
+          <h3 className="font-semibold text-gray-900 mb-3">🔮 월말 예측</h3>
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600">예상 총 지출</div>
+            <div className={`text-lg font-bold ${projectedOverrun > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {formatAmount(projectedSpending)}원
+            </div>
+            {projectedOverrun > 0 ? (
+              <div className="text-sm text-red-600">
+                ⚠️ {formatAmount(projectedOverrun)}원 초과 예상
               </div>
-              <div>
-                <p className="text-sm text-gray-600">📅 남은 일수</p>
-                <p className="text-lg font-semibold text-gray-900">{daysLeft}일</p>
+            ) : (
+              <div className="text-sm text-green-600">
+                ✅ 예산 내 달성 가능
               </div>
-              <div className="bg-white rounded-lg p-3">
-                <p className="text-xs text-gray-500">일평균 사용 가능</p>
-                <p className={`text-lg font-bold ${dailyAverage > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-                  {dailyAverage > 0 
-                    ? `${dailyAverage >= 10000 ? `${(dailyAverage / 10000).toFixed(1)}만` : Math.floor(dailyAverage).toLocaleString()}원/일`
-                    : '예산 초과'
-                  }
-                </p>
-              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 액션 인사이트 */}
+        <div className="bg-white rounded-lg p-4 border">
+          <h3 className="font-semibold text-gray-900 mb-3">💡 추천 액션</h3>
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600">일평균 권장 지출</div>
+            <div className={`text-lg font-bold ${dailyAverage > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+              {dailyAverage > 0 
+                ? `${formatAmount(dailyAverage)}원/일`
+                : '예산 조정 필요'
+              }
+            </div>
+            <div className="text-xs">
+              {projectedOverrun > 0 
+                ? `📉 ${Math.ceil((projectedOverrun / daysLeft) / 1000)}천원/일 절약하면 예산 달성`
+                : `🎯 현재 페이스 유지하면 ${formatAmount(budget - projectedSpending)}원 절약`
+              }
             </div>
           </div>
         </div>
@@ -713,7 +743,146 @@ export const BudgetProgressBar = ({ data }: { data: Array<{ category: string; bu
   return <ReactECharts option={option} style={{ height: '300px' }} />;
 };
 
-// 인사이트 카드 컴포넌트
+// Smart Budget Tracker - 카테고리 우선순위 매트릭스
+export const SmartBudgetTracker = ({ 
+  budgetData 
+}: { 
+  budgetData: Array<{ category: string; budget: number; actual: number; color: string }>;
+}) => {
+  // 카테고리별 위험도 및 절약 잠재력 계산
+  const categoryAnalysis = budgetData.map(item => {
+    const utilizationRate = item.budget > 0 ? (item.actual / item.budget) * 100 : 0;
+    const overrun = Math.max(0, item.actual - item.budget);
+    const savingPotential = item.actual * 0.15; // 15% 절약 가능성 가정
+    
+    let riskLevel: 'safe' | 'warning' | 'danger' = 'safe';
+    if (utilizationRate > 100) riskLevel = 'danger';
+    else if (utilizationRate > 80) riskLevel = 'warning';
+
+    return {
+      ...item,
+      utilizationRate,
+      overrun,
+      savingPotential,
+      riskLevel,
+      priority: (overrun + savingPotential) // 우선순위 점수
+    };
+  }).sort((a, b) => b.priority - a.priority);
+
+  const formatAmount = (amount: number) => {
+    return amount >= 10000 ? `${(amount / 10000).toFixed(1)}만` : Math.floor(amount).toLocaleString();
+  };
+
+  const getRiskColor = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'danger': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: '🔴' };
+      case 'warning': return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', icon: '🟡' };
+      default: return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: '🟢' };
+    }
+  };
+
+  const totalSavingPotential = categoryAnalysis.reduce((sum, item) => sum + item.savingPotential, 0);
+  const dangerCategories = categoryAnalysis.filter(item => item.riskLevel === 'danger');
+  const warningCategories = categoryAnalysis.filter(item => item.riskLevel === 'warning');
+
+  return (
+    <div className="card p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold text-gray-900">🎯 스마트 예산 트래커</h3>
+        <div className="text-sm text-gray-500">
+          절약 잠재력: <span className="font-bold text-green-600">{formatAmount(totalSavingPotential)}원</span>
+        </div>
+      </div>
+
+      {/* 요약 통계 */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+          <div className="text-lg font-bold text-red-600">{dangerCategories.length}</div>
+          <div className="text-sm text-red-700">위험</div>
+        </div>
+        <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="text-lg font-bold text-orange-600">{warningCategories.length}</div>
+          <div className="text-sm text-orange-700">주의</div>
+        </div>
+        <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+          <div className="text-lg font-bold text-green-600">{categoryAnalysis.length - dangerCategories.length - warningCategories.length}</div>
+          <div className="text-sm text-green-700">양호</div>
+        </div>
+      </div>
+
+      {/* 카테고리별 상세 분석 */}
+      <div className="space-y-3 mb-6">
+        <h4 className="font-medium text-gray-900 mb-3">카테고리별 위험도 분석</h4>
+        {categoryAnalysis.slice(0, 6).map((item, index) => {
+          const riskColor = getRiskColor(item.riskLevel);
+          return (
+            <div key={item.category} className={`p-4 rounded-lg border ${riskColor.bg} ${riskColor.border}`}>
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">{riskColor.icon}</span>
+                  <span className="font-medium text-gray-900">{item.category}</span>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm font-medium ${riskColor.text}`}>
+                    {item.utilizationRate.toFixed(0)}% 사용
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {formatAmount(item.actual)}원 / {formatAmount(item.budget)}원
+                  </div>
+                </div>
+              </div>
+              
+              {/* 진행률 바 */}
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div 
+                  className={`h-2 rounded-full ${item.riskLevel === 'danger' ? 'bg-red-500' : item.riskLevel === 'warning' ? 'bg-orange-500' : 'bg-green-500'}`}
+                  style={{ width: `${Math.min(item.utilizationRate, 100)}%` }}
+                ></div>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                {item.overrun > 0 ? (
+                  <span className="text-red-600">
+                    ⚠️ {formatAmount(item.overrun)}원 초과
+                  </span>
+                ) : (
+                  <span className="text-green-600">
+                    ✅ {formatAmount(item.budget - item.actual)}원 남음
+                  </span>
+                )}
+                <span className="text-blue-600">
+                  💡 {formatAmount(item.savingPotential)}원 절약 가능
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 액션 추천 */}
+      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <h4 className="font-medium text-blue-900 mb-3">💡 이번 주 액션 플랜</h4>
+        <div className="space-y-2">
+          {categoryAnalysis.slice(0, 3).map((item, index) => (
+            <div key={item.category} className="flex items-start space-x-2">
+              <span className="font-bold text-blue-700">{index + 1}.</span>
+              <div className="text-sm text-blue-800">
+                <strong>{item.category}</strong>에서 
+                {item.overrun > 0 
+                  ? ` ${formatAmount(item.overrun)}원 줄이고`
+                  : ` ${formatAmount(item.savingPotential)}원 절약하면`
+                } 
+                <strong> 월 {formatAmount(item.overrun + item.savingPotential)}원</strong> 개선 가능
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 기존 인사이트 카드 (간소화)
 export const InsightsCard = ({ 
   topCategory, 
   topAmount, 
@@ -731,32 +900,25 @@ export const InsightsCard = ({
   
   return (
     <div className="card p-6">
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">💡 이번 달 인사이트</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">📊 이번 달 트렌드</h3>
       <div className="space-y-4">
         <div className="bg-blue-50 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">🏆 최대 지출 카테고리</h4>
+          <h4 className="font-medium text-blue-900 mb-2">🏆 최대 지출</h4>
           <p className="text-blue-700">
-            <strong>{topCategory}</strong>에서 <strong>{topAmount >= 10000 ? `${(topAmount / 10000).toFixed(1)}만원` : `${topAmount.toLocaleString()}원`}</strong> 사용
+            <strong>{topCategory}</strong> {topAmount >= 10000 ? `${(topAmount / 10000).toFixed(1)}만원` : `${topAmount.toLocaleString()}원`}
           </p>
           <p className="text-sm text-blue-600 mt-1">
-            전체 지출의 {((topAmount / totalExpenses) * 100).toFixed(1)}%를 차지
+            전체의 {((topAmount / totalExpenses) * 100).toFixed(1)}% 차지
           </p>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4">
-          <h4 className="font-medium text-green-900 mb-2">📊 지출 패턴</h4>
-          <p className="text-green-700">
-            일평균 <strong>{averageDaily >= 10000 ? `${(averageDaily / 10000).toFixed(1)}만원` : `${Math.floor(averageDaily).toLocaleString()}원`}</strong> 지출
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="font-medium text-gray-900 mb-2">📈 지출 패턴</h4>
+          <p className="text-gray-700">
+            일평균 <strong>{averageDaily >= 10000 ? `${(averageDaily / 10000).toFixed(1)}만원` : `${Math.floor(averageDaily).toLocaleString()}원`}</strong>
           </p>
-          <p className="text-sm text-green-600 mt-1">
-            지난달 대비 {isIncreased ? '🔺' : '🔻'} {Math.abs(lastMonthComparison).toFixed(1)}% {isIncreased ? '증가' : '감소'}
-          </p>
-        </div>
-
-        <div className="bg-yellow-50 rounded-lg p-4">
-          <h4 className="font-medium text-yellow-900 mb-2">💰 절약 팁</h4>
-          <p className="text-yellow-700 text-sm">
-            {topCategory} 지출을 10% 줄이면 월 {Math.floor(topAmount * 0.1).toLocaleString()}원 절약 가능!
+          <p className="text-sm text-gray-600 mt-1">
+            전월 대비 {isIncreased ? '🔺' : '🔻'} {Math.abs(lastMonthComparison).toFixed(1)}% {isIncreased ? '증가' : '감소'}
           </p>
         </div>
       </div>

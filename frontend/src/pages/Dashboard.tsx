@@ -10,8 +10,9 @@ import {
   MonthlyTrendChart, 
   BudgetComparisonChart,
   DailySpendingHeatmap,
-  MainKPICard,
+  MoneyFlowCard,
   BudgetProgressBar,
+  SmartBudgetTracker,
   InsightsCard
 } from '@/components/Charts/EChartsComponents';
 import { MobileOptimizedChart } from '@/components/Charts/MobileOptimizedChart';
@@ -118,21 +119,74 @@ export const Dashboard = () => {
     return Object.entries(dailyStats).map(([date, amount]) => [date, amount] as [string, number]);
   };
 
-  // 예산 프로그레스 바 데이터 생성
+  // 더미 예산 데이터 초기화 (테스트용)
+  const initializeDummyBudgets = () => {
+    const existingBudgets = expenseStore.getBudgets();
+    if (existingBudgets.length === 0) {
+      // 더미 예산 데이터 생성
+      const dummyBudgets = [
+        { categoryName: '식비', amount: 500000 },
+        { categoryName: '교통', amount: 150000 },
+        { categoryName: '쇼핑', amount: 300000 },
+        { categoryName: '문화/여가', amount: 200000 },
+        { categoryName: '주거/통신', amount: 400000 },
+        { categoryName: '건강/의료', amount: 100000 },
+      ];
+      
+      const today = new Date().toISOString().split('T')[0];
+      dummyBudgets.forEach(budget => {
+        expenseStore.createBudget({
+          categoryName: budget.categoryName,
+          amount: budget.amount,
+          periodType: 'monthly',
+          startDate: today,
+        });
+      });
+    }
+  };
+
+  // 예산 프로그레스 바 데이터 생성 (개선)
   const generateBudgetProgressData = () => {
+    // 더미 데이터 초기화
+    initializeDummyBudgets();
+    
     const comparison = expenseStore.getCategoryBudgetComparison();
-    return comparison
-      .filter(item => item.amount > 0)
-      .map(item => {
-        const categoryInfo = getCategoryInfo(item.categoryName);
-        return {
-          category: getCategoryDisplay(item.categoryName),
-          budget: item.amount,
-          actual: item.actualSpent,
-          color: categoryInfo.color
-        };
-      })
-      .slice(0, 8); // 상위 8개만
+    const expenses = expenseStore.getExpensesSync();
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    
+    // 이번 달 지출이 있는 카테고리들 추출
+    const thisMonthExpenses = expenses.filter(e => 
+      e.date.startsWith(currentMonth) && e.type === 'expense'
+    );
+    
+    const categoriesWithSpending = [...new Set(thisMonthExpenses.map(e => e.category))];
+    
+    // 예산이 있거나 지출이 있는 카테고리들 포함
+    const allRelevantCategories = new Set([
+      ...comparison.map(item => item.categoryName),
+      ...categoriesWithSpending
+    ]);
+    
+    const result = Array.from(allRelevantCategories).map(categoryName => {
+      const budgetItem = comparison.find(item => item.categoryName === categoryName);
+      const actualSpent = thisMonthExpenses
+        .filter(e => e.category === categoryName)
+        .reduce((sum, e) => sum + e.amount, 0);
+      
+      const categoryInfo = getCategoryInfo(categoryName);
+      
+      return {
+        category: getCategoryDisplay(categoryName),
+        budget: budgetItem?.amount || 0,
+        actual: actualSpent,
+        color: categoryInfo.color
+      };
+    })
+    .filter(item => item.budget > 0 || item.actual > 0) // 예산이나 지출이 있는 것만
+    .sort((a, b) => b.actual - a.actual) // 실제 지출 기준 정렬
+    .slice(0, 8);
+    
+    return result;
   };
 
   // 인사이트 데이터 생성
@@ -265,7 +319,7 @@ export const Dashboard = () => {
           transition={{ duration: 0.6 }}
           className="mb-6"
         >
-          <MainKPICard
+          <MoneyFlowCard
             income={stats.totalIncome}
             expense={stats.totalAmount}
             budget={stats.budgetSummary?.totalBudget || 0}
@@ -327,21 +381,16 @@ export const Dashboard = () => {
         </MobileOptimizedChart>
       </div>
 
-      {/* 예산 프로그레스 바 */}
+
+      {/* Smart Budget Tracker */}
       {budgetProgressData.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-6"
         >
-          <MobileOptimizedChart
-            title="🎯 카테고리별 예산 사용 현황"
-            isLoading={isChartsLoading}
-            height="h-64"
-          >
-            <BudgetProgressBar data={budgetProgressData} />
-          </MobileOptimizedChart>
+          <SmartBudgetTracker budgetData={budgetProgressData} />
         </motion.div>
       )}
 
@@ -352,7 +401,7 @@ export const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
             <InsightsCard {...insightData} />
           </motion.div>
@@ -362,7 +411,7 @@ export const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
           className="card p-6"
         >
           <h3 className="text-lg font-semibold mb-4 text-gray-900">🚀 빠른 액션</h3>

@@ -31,8 +31,9 @@ export class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    
     try {
-      const url = `${this.baseURL}${endpoint}`;
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...options.headers as Record<string, string>,

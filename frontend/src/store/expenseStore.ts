@@ -29,15 +29,16 @@ const EXPENSES_KEY = 'moneychat_expenses';
 const CHAT_SESSIONS_KEY = 'moneychat_chat_sessions';
 
 class ExpenseStore {
-  private useApi: boolean = true;
+  private useApi: boolean = false; // 오프라인 모드: LocalStorage만 사용
 
-  // API를 먼저 시도하고, 실패하면 localStorage 사용
+  // LocalStorage 우선 사용 (오프라인 모드)
   private async withFallback<T>(
     apiCall: () => Promise<T>,
     fallbackCall: () => T,
     errorMessage: string = 'API 호출 실패'
   ): Promise<T> {
     if (!this.useApi) {
+      // 오프라인 모드: 바로 localStorage 사용
       return fallbackCall();
     }
 

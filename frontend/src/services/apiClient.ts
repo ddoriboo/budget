@@ -69,9 +69,9 @@ export class ApiClient {
         data,
       };
     } catch (error) {
-      // 백엔드 연결 실패는 예상된 상황이므로 warn으로 변경
+      // 오프라인 모드에서는 API 에러 로그를 최소화
       if (url.includes('localhost:4000')) {
-        console.warn('백엔드 서버가 실행되지 않았습니다. LocalStorage 모드로 작동합니다.');
+        // 로그 제거: 이미 오프라인 모드로 설정됨
       } else {
         console.error('API Request failed:', error);
       }

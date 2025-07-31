@@ -48,6 +48,8 @@ export const orchestrateChat = async (
         return await handleAccountManagement(message, intentResult);
       
       default:
+        console.log('⚠️ 알 수 없는 Intent:', intentResult.intent, 'typeof:', typeof intentResult.intent);
+        console.log('🔍 전체 intentResult:', intentResult);
         return {
           success: false,
           intent: intentResult.intent,
@@ -99,6 +101,13 @@ const handleExpenseIncome = async (
     };
   }
   
+  console.log('❌ 수입/지출 분석 실패:', {
+    success: expenseResult.success,
+    expenses: expenseResult.expenses,
+    clarification_needed: expenseResult.clarification_needed,
+    clarification_message: expenseResult.clarification_message
+  });
+
   return {
     success: false,
     intent: UserIntent.EXPENSE_INCOME,

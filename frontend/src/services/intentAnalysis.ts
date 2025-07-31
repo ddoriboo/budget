@@ -127,7 +127,9 @@ Now analyze this user message and return JSON response:
 
 // 키워드 기반 폴백 분석 (API 실패 시)
 const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
+  console.log('🔧 Fallback Intent 분석 시작:', message);
   const lowerMessage = message.toLowerCase();
+  console.log('🔧 소문자 변환:', lowerMessage);
   
   // 예산 관련 키워드 (더 상세하게)
   if (lowerMessage.includes('예산') || lowerMessage.includes('한도') || lowerMessage.includes('제한') ||
@@ -169,10 +171,12 @@ const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
   }
   
   // 수입/지출 키워드 (더 정확하게)
-  if (lowerMessage.includes('썼') || lowerMessage.includes('샀') || lowerMessage.includes('결제') || 
-      lowerMessage.includes('지출') || lowerMessage.includes('먹었') || lowerMessage.includes('마셨') ||
-      lowerMessage.includes('월급') || lowerMessage.includes('받았') || lowerMessage.includes('수입') ||
-      lowerMessage.includes('원') || lowerMessage.includes('만원') || lowerMessage.includes('천원')) {
+  const expenseKeywords = ['썼', '샀', '결제', '지출', '먹었', '마셨', '월급', '받았', '수입', '원', '만원', '천원'];
+  const matchedKeywords = expenseKeywords.filter(keyword => lowerMessage.includes(keyword));
+  console.log('🔧 수입/지출 키워드 매치:', matchedKeywords);
+  
+  if (matchedKeywords.length > 0) {
+    console.log('✅ EXPENSE_INCOME 의도로 분류됨');
     return {
       intent: UserIntent.EXPENSE_INCOME,
       confidence: 0.8,
@@ -181,6 +185,7 @@ const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
   }
   
   // 기본값: 수입/지출
+  console.log('🔧 기본값으로 EXPENSE_INCOME 반환');
   return {
     intent: UserIntent.EXPENSE_INCOME,
     confidence: 0.6,

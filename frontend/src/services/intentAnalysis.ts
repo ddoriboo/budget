@@ -25,12 +25,8 @@ export const analyzeUserIntent = async (
 ): Promise<IntentAnalysisResult> => {
   
   if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
-    return {
-      intent: UserIntent.EXPENSE_INCOME, // 기본값으로 폴백
-      confidence: 0.5,
-      clarificationNeeded: true,
-      clarificationMessage: '⚠️ OpenAI API 키가 설정되지 않았습니다.'
-    };
+    console.log('⚠️ OpenAI API 키가 없어서 fallback 분석을 사용합니다.');
+    return fallbackIntentAnalysis(message);
   }
 
   const systemPrompt = `
@@ -133,11 +129,12 @@ Now analyze this user message and return JSON response:
 const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
   const lowerMessage = message.toLowerCase();
   
-  // 예산 관련 키워드
-  if (lowerMessage.includes('예산') || lowerMessage.includes('한도') || lowerMessage.includes('제한')) {
+  // 예산 관련 키워드 (더 상세하게)
+  if (lowerMessage.includes('예산') || lowerMessage.includes('한도') || lowerMessage.includes('제한') ||
+      (lowerMessage.includes('만원') && (lowerMessage.includes('설정') || lowerMessage.includes('잡아') || lowerMessage.includes('정해')))) {
     return {
       intent: UserIntent.BUDGET_SETTING,
-      confidence: 0.7,
+      confidence: 0.8,
       clarificationNeeded: false
     };
   }
@@ -152,10 +149,33 @@ const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
   }
   
   // 분석 요청 키워드
-  if (lowerMessage.includes('분석') || lowerMessage.includes('얼마나') || lowerMessage.includes('통계') || lowerMessage.includes('현황')) {
+  if (lowerMessage.includes('분석') || lowerMessage.includes('얼마나') || lowerMessage.includes('통계') || 
+      lowerMessage.includes('현황') || lowerMessage.includes('알려줘') || lowerMessage.includes('보여줘')) {
     return {
       intent: UserIntent.ANALYSIS_REQUEST,
       confidence: 0.7,
+      clarificationNeeded: false
+    };
+  }
+  
+  // 도움말/일반 문의
+  if (lowerMessage.includes('사용법') || lowerMessage.includes('도움말') || lowerMessage.includes('어떻게') ||
+      lowerMessage.includes('방법') || lowerMessage.includes('뭐할') || lowerMessage.includes('뭘할')) {
+    return {
+      intent: UserIntent.GENERAL_INQUIRY,
+      confidence: 0.8,
+      clarificationNeeded: false
+    };
+  }
+  
+  // 수입/지출 키워드 (더 정확하게)
+  if (lowerMessage.includes('썼') || lowerMessage.includes('샀') || lowerMessage.includes('결제') || 
+      lowerMessage.includes('지출') || lowerMessage.includes('먹었') || lowerMessage.includes('마셨') ||
+      lowerMessage.includes('월급') || lowerMessage.includes('받았') || lowerMessage.includes('수입') ||
+      lowerMessage.includes('원') || lowerMessage.includes('만원') || lowerMessage.includes('천원')) {
+    return {
+      intent: UserIntent.EXPENSE_INCOME,
+      confidence: 0.8,
       clarificationNeeded: false
     };
   }

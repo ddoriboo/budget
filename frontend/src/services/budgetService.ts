@@ -15,7 +15,7 @@ export interface Budget {
 
 export interface BudgetAnalysisResult {
   success: boolean;
-  budgets?: Budget[];
+  budgets?: Partial<Budget>[];
   action?: 'create' | 'update' | 'delete' | 'query';
   clarificationNeeded?: boolean;
   clarificationMessage?: string;
@@ -31,11 +31,8 @@ export const analyzeBudgetRequest = async (
 ): Promise<BudgetAnalysisResult> => {
   
   if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
-    return {
-      success: false,
-      clarificationNeeded: true,
-      clarificationMessage: '⚠️ OpenAI API 키가 설정되지 않았습니다.'
-    };
+    console.log('⚠️ OpenAI API 키가 없어서 간단한 예산 분석을 사용합니다.');
+    return analyzeBudgetFallback(message, currentBudgets);
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -131,6 +128,75 @@ Now analyze this budget request:
       clarificationMessage: '예산 분석 중 오류가 발생했습니다. 다시 시도해주세요.'
     };
   }
+};
+
+// 간단한 키워드 기반 예산 분석 (API 키 없을 때)
+const analyzeBudgetFallback = (message: string, currentBudgets: Budget[]): BudgetAnalysisResult => {
+  const lowerMessage = message.toLowerCase();
+  const today = new Date().toISOString().split('T')[0];
+  
+  // 예산 조회
+  if (lowerMessage.includes('현황') || lowerMessage.includes('알려줘') || lowerMessage.includes('보여줘') || 
+      lowerMessage.includes('확인') || lowerMessage.includes('어떻게')) {
+    return {
+      success: true,
+      action: 'query'
+    };
+  }
+  
+  // 예산 설정
+  const amountMatch = lowerMessage.match(/(\d+)만원/);
+  if (amountMatch && (lowerMessage.includes('예산') || lowerMessage.includes('설정') || lowerMessage.includes('잡아'))) {
+    const amount = parseInt(amountMatch[1]) * 10000;
+    
+    // 카테고리 추출
+    let categoryName = '기타';
+    if (lowerMessage.includes('식비') || lowerMessage.includes('음식')) categoryName = '식비';
+    else if (lowerMessage.includes('교통')) categoryName = '교통';
+    else if (lowerMessage.includes('쇼핑')) categoryName = '쇼핑';
+    else if (lowerMessage.includes('문화') || lowerMessage.includes('여가')) categoryName = '문화/여가';
+    else if (lowerMessage.includes('주거') || lowerMessage.includes('통신')) categoryName = '주거/통신';
+    else if (lowerMessage.includes('건강') || lowerMessage.includes('의료')) categoryName = '건강/의료';
+    else if (lowerMessage.includes('교육')) categoryName = '교육';
+    else if (lowerMessage.includes('경조사')) categoryName = '경조사';
+    
+    return {
+      success: true,
+      action: 'create',
+      budgets: [{
+        categoryName,
+        amount,
+        periodType: 'monthly' as const,
+        startDate: today,
+        endDate: undefined
+      }]
+    };
+  }
+  
+  // 전체 예산 설정 (예: "내 이번달 예산은 200만원이야")
+  const totalAmountMatch = lowerMessage.match(/(\d+)만원/);
+  if (totalAmountMatch && (lowerMessage.includes('이번달') || lowerMessage.includes('이번 달') || 
+      lowerMessage.includes('예산은') || lowerMessage.includes('총'))) {
+    const amount = parseInt(totalAmountMatch[1]) * 10000;
+    
+    return {
+      success: true,
+      action: 'create',
+      budgets: [{
+        categoryName: '전체',
+        amount,
+        periodType: 'monthly' as const,
+        startDate: today,
+        endDate: undefined
+      }]
+    };
+  }
+  
+  return {
+    success: false,
+    clarificationNeeded: true,
+    clarificationMessage: '예산 설정을 정확히 이해하지 못했어요. 예: "식비 예산 30만원으로 설정해줘"'
+  };
 };
 
 // 로컬 예산 데이터 관리

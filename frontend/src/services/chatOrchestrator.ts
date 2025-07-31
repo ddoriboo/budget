@@ -122,21 +122,21 @@ const handleBudgetSetting = async (
     switch (budgetResult.action) {
       case 'create':
         budgetResult.budgets.forEach(budgetData => {
-          BudgetStore.createBudget(budgetData);
+          BudgetStore.createBudget(budgetData as Omit<Budget, 'id' | 'spent' | 'createdAt' | 'updatedAt'>);
         });
-        responseMessage = `✅ ${budgetResult.budgets[0].categoryName} 예산을 월 ${budgetResult.budgets[0].amount.toLocaleString()}원으로 설정했어요!`;
+        responseMessage = `✅ ${budgetResult.budgets[0].categoryName} 예산을 월 ${budgetResult.budgets[0].amount?.toLocaleString()}원으로 설정했어요!`;
         break;
         
       case 'update':
         budgetResult.budgets.forEach(budgetData => {
-          BudgetStore.updateBudget(budgetData.categoryName, budgetData);
+          BudgetStore.updateBudget(budgetData.categoryName!, budgetData);
         });
-        responseMessage = `✅ ${budgetResult.budgets[0].categoryName} 예산을 ${budgetResult.budgets[0].amount.toLocaleString()}원으로 수정했어요!`;
+        responseMessage = `✅ ${budgetResult.budgets[0].categoryName} 예산을 ${budgetResult.budgets[0].amount?.toLocaleString()}원으로 수정했어요!`;
         break;
         
       case 'delete':
         budgetResult.budgets.forEach(budgetData => {
-          BudgetStore.deleteBudget(budgetData.categoryName);
+          BudgetStore.deleteBudget(budgetData.categoryName!);
         });
         responseMessage = `✅ ${budgetResult.budgets[0].categoryName} 예산을 삭제했어요!`;
         break;

@@ -180,12 +180,8 @@ export const analyzeExpenseMessage = async (
   try {
     // API 키 확인
     if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
-      return {
-        success: false,
-        expenses: [],
-        clarification_needed: true,
-        clarification_message: '⚠️ OpenAI API 키가 설정되지 않았습니다. 관리자에게 문의하세요.',
-      };
+      console.log('⚠️ OpenAI API 키가 없어서 간단한 지출 분석을 사용합니다.');
+      return analyzeExpenseFallback(message);
     }
     // 현재 시점에서 실시간 날짜 계산
     const today = getCurrentDate();
@@ -355,4 +351,107 @@ ${analyzeConversationContext(message, conversationHistory)}
       clarification_message: 'AI 분석 중 오류가 발생했습니다. 다시 시도해주세요.',
     };
   }
+};
+
+// 간단한 키워드 기반 지출 분석 (API 키 없을 때)
+const analyzeExpenseFallback = (message: string): {
+  success: boolean;
+  expenses: ExpenseData[];
+  clarification_needed: boolean;
+  clarification_message?: string;
+} => {
+  const lowerMessage = message.toLowerCase();
+  const expenses: ExpenseData[] = [];
+  
+  // 금액 추출
+  const amountMatches = message.match(/(\d+)([만천]?)원/g);
+  if (!amountMatches || amountMatches.length === 0) {
+    return {
+      success: false,
+      expenses: [],
+      clarification_needed: true,
+      clarification_message: '금액을 찾을 수 없어요. 예: "5천원", "1만원"과 같이 말씀해주세요.'
+    };
+  }
+  
+  // 날짜 파싱
+  let date = getCurrentDate();
+  if (lowerMessage.includes('어제')) {
+    date = parseRelativeDate('어제');
+  } else if (lowerMessage.includes('그저께') || lowerMessage.includes('그제')) {
+    date = parseRelativeDate('그저께');
+  } else if (lowerMessage.includes('지난주')) {
+    date = parseRelativeDate('지난주');
+  } else if (lowerMessage.includes('지난달')) {
+    date = parseRelativeDate('지난달');
+  }
+  
+  // 타입 결정 (수입 vs 지출)
+  const isIncome = lowerMessage.includes('월급') || lowerMessage.includes('받았') || 
+                   lowerMessage.includes('수입') || lowerMessage.includes('들어왔');
+  
+  // 각 금액에 대해 거래 생성
+  amountMatches.forEach((amountStr) => {
+    // 금액 파싱
+    let amount = 0;
+    const numMatch = amountStr.match(/(\d+)([만천]?)원/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1]);
+      if (numMatch[2] === '만') amount = num * 10000;
+      else if (numMatch[2] === '천') amount = num * 1000;
+      else amount = num;
+    }
+    
+    // 카테고리 추출
+    let category = isIncome ? '급여' : '기타';
+    let subcategory = isIncome ? '월급' : '기타';
+    
+    if (!isIncome) {
+      if (lowerMessage.includes('스타벅스') || lowerMessage.includes('커피') || lowerMessage.includes('카페')) {
+        category = '식비';
+        subcategory = '카페/간식';
+      } else if (lowerMessage.includes('점심') || lowerMessage.includes('저녁') || lowerMessage.includes('아침')) {
+        category = '식비';
+        subcategory = '외식';
+      } else if (lowerMessage.includes('마트') || lowerMessage.includes('장보기')) {
+        category = '식비';
+        subcategory = '식료품';
+      } else if (lowerMessage.includes('택시') || lowerMessage.includes('버스') || lowerMessage.includes('지하철')) {
+        category = '교통';
+        subcategory = '대중교통';
+      } else if (lowerMessage.includes('영화') || lowerMessage.includes('게임')) {
+        category = '문화/여가';
+        subcategory = '엔터테인먼트';
+      }
+    }
+    
+    // 장소 추출
+    let place = category;
+    if (lowerMessage.includes('스타벅스')) place = '스타벅스';
+    else if (lowerMessage.includes('이마트')) place = '이마트';
+    else if (lowerMessage.includes('cgv')) place = 'CGV';
+    
+    // 품목 추출
+    let memo = '';
+    if (lowerMessage.includes('아메리카노')) memo = '아메리카노';
+    else if (lowerMessage.includes('삼겹살')) memo = '삼겹살';
+    else if (lowerMessage.includes('팝콘')) memo = '팝콘';
+    
+    expenses.push({
+      date,
+      amount,
+      category,
+      subcategory,
+      place,
+      memo,
+      confidence: 0.7,
+      type: isIncome ? 'income' : 'expense'
+    });
+  });
+  
+  return {
+    success: true,
+    expenses,
+    clarification_needed: false
+  };
 };

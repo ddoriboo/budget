@@ -150,7 +150,7 @@ const generateFallbackSummary = (
   }, {} as Record<string, number>);
 
   const topCategory = Object.entries(categoryStats)
-    .sort(([,a], [,b]) => b - a)[0];
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0];
 
   const totalAmount = recentExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const averageDaily = totalAmount / 7;
@@ -165,7 +165,7 @@ const generateFallbackSummary = (
   }, { morning: 0, afternoon: 0, evening: 0 });
 
   const peakTime = Object.entries(hourlyPattern)
-    .sort(([,a], [,b]) => b - a)[0]?.[0] || 'afternoon';
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || 'afternoon';
 
   const timeLabels = {
     morning: '오전',
@@ -184,7 +184,7 @@ const generateFallbackSummary = (
       ? `주로 ${timeLabels[peakTime as keyof typeof timeLabels]}에 활동하며, ${topCategory?.[0] || '기타'} 카테고리 지출이 많아요`
       : '지출 패턴을 분석할 데이터가 부족해요',
     keyInsights: totalTransactions > 0 ? [
-      `${topCategory?.[0] || '기타'}에서 ${formatAmount(topCategory?.[1] || 0)} 지출`,
+      `${topCategory?.[0] || '기타'}에서 ${formatAmount((topCategory?.[1] as number) || 0)} 지출`,
       `일평균 ${formatAmount(averageDaily)} 수준으로 지출`
     ] : [
       '아직 분석할 거래가 없어요',

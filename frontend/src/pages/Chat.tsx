@@ -337,7 +337,7 @@ export const Chat = () => {
               <p className="text-sm">{message.content}</p>
               
               {/* AI 응답에 데이터가 있을 경우 확인 카드 표시 */}
-              {message.type === 'ai' && message.data && (
+              {message.type === 'ai' && message.data && message.data.amount && (
                 <div className="mt-3">
                   {message.data.multipleTransactions ? (
                     // 복수 거래 표시
@@ -362,7 +362,7 @@ export const Chat = () => {
                               <div className="flex justify-between">
                                 <span className="text-gray-600">금액:</span>
                                 <span className={`font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                  {transaction.type === 'income' ? '+' : '-'}{transaction.amount.toLocaleString()}원
+                                  {transaction.type === 'income' ? '+' : '-'}{transaction.amount?.toLocaleString() || '0'}원
                                 </span>
                               </div>
                               {transaction.memo && (
@@ -410,12 +410,12 @@ export const Chat = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">금액:</span>
                           <span className={`font-medium ${message.data.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                            {message.data.type === 'income' ? '+' : '-'}{message.data.amount.toLocaleString()}원
+                            {message.data.type === 'income' ? '+' : '-'}{message.data.amount?.toLocaleString() || '0'}원
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">신뢰도:</span>
-                          <span className="font-medium text-primary">{(message.data.confidence * 100).toFixed(0)}%</span>
+                          <span className="font-medium text-primary">{((message.data.confidence || 0) * 100).toFixed(0)}%</span>
                         </div>
                       </div>
                       <div className="flex space-x-2 mt-3">

@@ -2,6 +2,7 @@
 
 import { expenseApi, ExpenseApiService, ApiExpense, CreateExpenseRequest, UpdateExpenseRequest } from '@/services/expenseApi';
 import { chatApi, ChatApiService, ApiChatSession, CreateChatSessionRequest, AddMessageRequest } from '@/services/chatApi';
+import { BudgetStore } from '@/services/budgetService';
 
 export interface ExpenseItem {
   id: string;
@@ -142,6 +143,12 @@ class ExpenseStore {
         
         expenses.push(newExpense);
         this.saveExpenses(expenses);
+        
+        // 지출인 경우 예산에서 차감
+        if (expense.type === 'expense') {
+          BudgetStore.updateSpentAmount(expense.category, expense.amount);
+        }
+        
         return newExpense;
       },
       '지출 추가 실패'
@@ -160,6 +167,12 @@ class ExpenseStore {
     
     expenses.push(newExpense);
     this.saveExpenses(expenses);
+    
+    // 지출인 경우 예산에서 차감
+    if (expense.type === 'expense') {
+      BudgetStore.updateSpentAmount(expense.category, expense.amount);
+    }
+    
     return newExpense;
   }
 
@@ -426,6 +439,70 @@ class ExpenseStore {
   clearAllData(): void {
     localStorage.removeItem(EXPENSES_KEY);
     localStorage.removeItem(CHAT_SESSIONS_KEY);
+  }
+
+  // 예산 관련 메서드들
+  getBudgets() {
+    return BudgetStore.getBudgets();
+  }
+
+  getBudgetStatus() {
+    return BudgetStore.getBudgetStatus();
+  }
+
+  createBudget(budgetData: any) {
+    return BudgetStore.createBudget(budgetData);
+  }
+
+  updateBudget(categoryName: string, updates: any) {
+    return BudgetStore.updateBudget(categoryName, updates);
+  }
+
+  deleteBudget(categoryName: string) {
+    return BudgetStore.deleteBudget(categoryName);
+  }
+
+  // 카테고리별 예산 vs 실제 지출 비교
+  getCategoryBudgetComparison() {
+    const budgets = BudgetStore.getBudgetStatus();
+    const expenses = this.getExpensesSync();
+    
+    // 현재 월의 지출만 필터링
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const currentMonthExpenses = expenses.filter(expense => 
+      expense.date.startsWith(currentMonth) && expense.type === 'expense'
+    );
+    
+    // 카테고리별 실제 지출 계산
+    const actualSpending = currentMonthExpenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // 예산과 실제 지출 비교
+    return budgets.map(budget => ({
+      ...budget,
+      actualSpent: actualSpending[budget.categoryName] || 0,
+      budgetUtilization: budget.amount > 0 ? ((actualSpending[budget.categoryName] || 0) / budget.amount) * 100 : 0
+    }));
+  }
+
+  // 전체 예산 요약
+  getBudgetSummary() {
+    const comparison = this.getCategoryBudgetComparison();
+    const totalBudget = comparison.reduce((sum, item) => sum + item.amount, 0);
+    const totalSpent = comparison.reduce((sum, item) => sum + item.actualSpent, 0);
+    const totalRemaining = totalBudget - totalSpent;
+    const overBudgetCategories = comparison.filter(item => item.actualSpent > item.amount);
+
+    return {
+      totalBudget,
+      totalSpent,
+      totalRemaining,
+      overBudgetCategories: overBudgetCategories.length,
+      utilizationPercentage: totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0,
+      categoryComparisons: comparison
+    };
   }
 }
 

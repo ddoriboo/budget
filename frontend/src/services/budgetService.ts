@@ -144,6 +144,39 @@ const analyzeBudgetFallback = (message: string, currentBudgets: Budget[]): Budge
     };
   }
   
+  // "전체 카테고리" 또는 "전체" 응답 처리
+  if (lowerMessage.includes('전체')) {
+    // 이전 설정값이 있는지 확인 (localStorage에서)
+    const recentBudgets = currentBudgets.filter(b => b.categoryName === '전체');
+    if (recentBudgets.length > 0) {
+      const recentAmount = recentBudgets[0].amount;
+      return {
+        success: true,
+        action: 'create',
+        budgets: [{
+          categoryName: '전체',
+          amount: recentAmount,
+          periodType: 'monthly' as const,
+          startDate: today,
+          endDate: undefined
+        }]
+      };
+    }
+    
+    // 기본값으로 200만원 설정
+    return {
+      success: true,
+      action: 'create',
+      budgets: [{
+        categoryName: '전체',
+        amount: 2000000,
+        periodType: 'monthly' as const,
+        startDate: today,
+        endDate: undefined
+      }]
+    };
+  }
+  
   // 예산 설정
   const amountMatch = lowerMessage.match(/(\d+)만원/);
   if (amountMatch && (lowerMessage.includes('예산') || lowerMessage.includes('설정') || lowerMessage.includes('잡아'))) {

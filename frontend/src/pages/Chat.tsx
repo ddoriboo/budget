@@ -6,6 +6,7 @@ import { expenseStore, ChatSession } from '@/store/expenseStore';
 import { getCategoryDisplay } from '@/utils/categoryUtils';
 import { orchestrateChat, OrchestrationResult } from '@/services/chatOrchestrator';
 import { UserIntent } from '@/services/intentAnalysis';
+import { renderSimpleMarkdown } from '@/utils/markdownUtils';
 
 interface Message {
   id: string;
@@ -334,7 +335,7 @@ export const Chat = () => {
                 ? 'chat-bubble-user' 
                 : 'chat-bubble-ai'
             }`}>
-              <p className="text-sm">{message.content}</p>
+              <div className="text-sm">{renderSimpleMarkdown(message.content)}</div>
               
               {/* AI 응답에 데이터가 있을 경우 확인 카드 표시 */}
               {message.type === 'ai' && message.data && message.data.amount && (

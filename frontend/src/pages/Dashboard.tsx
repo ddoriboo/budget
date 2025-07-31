@@ -28,6 +28,7 @@ export const Dashboard = () => {
     totalIncome: 0,
     categoryStats: {} as Record<string, number>,
     recentExpenses: [] as any[],
+    budgetSummary: null as any,
   });
   const [recentChats, setRecentChats] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -100,7 +101,12 @@ export const Dashboard = () => {
         setIsChartsLoading(true);
         
         const expenseStats = await expenseStore.getExpenseStats();
-        setStats(expenseStats);
+        const budgetSummary = expenseStore.getBudgetSummary();
+        
+        setStats({
+          ...expenseStats,
+          budgetSummary
+        });
         setIsLoading(false);
 
         // 차트 데이터 생성 (약간의 지연으로 순차적 로딩 효과)
@@ -163,6 +169,7 @@ export const Dashboard = () => {
       <div className="mobile-grid gap-4 sm:gap-6">
         {isLoading ? (
           <>
+            <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -234,6 +241,45 @@ export const Dashboard = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* 예산 요약 카드 */}
+            {stats.budgetSummary && stats.budgetSummary.totalBudget > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="card p-4 sm:p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">이번 달 예산</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {((stats.budgetSummary.utilizationPercentage || 0)).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {stats.budgetSummary.totalSpent.toLocaleString()}원 / {stats.budgetSummary.totalBudget.toLocaleString()}원
+                    </p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    stats.budgetSummary.utilizationPercentage > 100 
+                      ? 'bg-red-100 text-red-600' 
+                      : stats.budgetSummary.utilizationPercentage > 80 
+                      ? 'bg-yellow-100 text-yellow-600' 
+                      : 'bg-green-100 text-green-600'
+                  }`}>
+                    <span className="text-xl">
+                      {stats.budgetSummary.utilizationPercentage > 100 ? '⚠️' : 
+                       stats.budgetSummary.utilizationPercentage > 80 ? '⚡' : '✅'}
+                    </span>
+                  </div>
+                </div>
+                {stats.budgetSummary.overBudgetCategories > 0 && (
+                  <div className="mt-2 text-xs text-red-600">
+                    {stats.budgetSummary.overBudgetCategories}개 카테고리 예산 초과
+                  </div>
+                )}
+              </motion.div>
+            )}
           </>
         )}
       </div>

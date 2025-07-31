@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { analyzeExpenseMessage } from '@/services/openai';
@@ -21,6 +21,16 @@ export const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 메시지가 추가될 때마다 스크롤을 하단으로 이동
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // 컴포넌트 초기화 시 현재 세션 로드 또는 새 세션 생성
   useEffect(() => {
@@ -338,7 +348,7 @@ export const Chat = () => {
               <div className="text-sm">{renderSimpleMarkdown(message.content)}</div>
               
               {/* AI 응답에 데이터가 있을 경우 확인 카드 표시 */}
-              {message.type === 'ai' && message.data && message.data.amount && (
+              {message.type === 'ai' && message.data && (message.data.amount || message.data.multipleTransactions) && (
                 <div className="mt-3">
                   {message.data.multipleTransactions ? (
                     // 복수 거래 표시
@@ -460,6 +470,9 @@ export const Chat = () => {
             </div>
           </div>
         )}
+        
+        {/* 자동 스크롤을 위한 참조 div */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* 빠른 제안 버튼들 */}

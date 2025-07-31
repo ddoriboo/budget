@@ -534,19 +534,12 @@ export const MoneyFlowCard = ({
       </div>
 
       {/* Money Flow 시각화 */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* 1. 수입 */}
         <div className="text-center p-4 bg-white rounded-lg border-2 border-green-200">
           <div className="text-2xl mb-2">💰</div>
           <div className="text-sm text-gray-600 mb-1">수입</div>
           <div className="text-lg font-bold text-green-600">+{formatAmount(income)}원</div>
-        </div>
-
-        {/* Flow Arrow */}
-        <div className="hidden lg:flex items-center justify-center">
-          <div className="w-full h-0.5 bg-gray-300 relative">
-            <div className="absolute right-0 top-0 w-0 h-0 border-l-4 border-l-gray-300 border-t-2 border-b-2 border-t-transparent border-b-transparent transform -translate-y-1/2"></div>
-          </div>
         </div>
 
         {/* 2. 예산 */}
@@ -557,10 +550,19 @@ export const MoneyFlowCard = ({
           <div className="text-xs text-gray-500 mt-1">{budgetUtilization.toFixed(0)}% 사용</div>
         </div>
 
-        {/* Flow Arrow */}
-        <div className="hidden lg:flex items-center justify-center">
-          <div className="w-full h-0.5 bg-gray-300 relative">
-            <div className="absolute right-0 top-0 w-0 h-0 border-l-4 border-l-gray-300 border-t-2 border-b-2 border-t-transparent border-b-transparent transform -translate-y-1/2"></div>
+        {/* 3. 지출 */}
+        <div className="text-center p-4 bg-white rounded-lg border-2 border-red-200">
+          <div className="text-2xl mb-2">💸</div>
+          <div className="text-sm text-gray-600 mb-1">지출</div>
+          <div className="text-lg font-bold text-red-600">-{formatAmount(expense)}원</div>
+        </div>
+
+        {/* 4. 잔여 */}
+        <div className="text-center p-4 bg-white rounded-lg border-2 border-purple-200">
+          <div className="text-2xl mb-2">💎</div>
+          <div className="text-sm text-gray-600 mb-1">잔여</div>
+          <div className={`text-lg font-bold ${netWorth >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+            {netWorth >= 0 ? '+' : ''}{formatAmount(netWorth)}원
           </div>
         </div>
       </div>

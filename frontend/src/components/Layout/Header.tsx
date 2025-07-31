@@ -1,6 +1,35 @@
-import { BellIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { BellIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Header = () => {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout, isGuestMode } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    setShowUserMenu(false);
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getUserDisplayName = () => {
+    if (isGuestMode) return '게스트';
+    return user?.name || '사용자';
+  };
+
+  const getUserStatus = () => {
+    if (isGuestMode) return '게스트 모드';
+    return '프리미엄 사용자';
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
@@ -34,17 +63,89 @@ export const Header = () => {
           
           <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
           
-          <div className="flex items-center space-x-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-gray-900">김머니</div>
-              <div className="text-xs text-gray-500">프리미엄 사용자</div>
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center touch-button active:scale-95">
-              <span className="text-white text-sm font-medium">김</span>
-            </div>
+          {/* 사용자 메뉴 */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-3 touch-button p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 min-h-[44px]"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="text-right hidden sm:block">
+                  <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                  <div className="text-xs text-gray-500">{getUserStatus()}</div>
+                </div>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 ${isGuestMode ? 'bg-gray-400' : 'bg-primary'} rounded-full flex items-center justify-center`}>
+                  <span className="text-white text-sm font-medium">
+                    {isGuestMode ? '게' : getInitials(getUserDisplayName())}
+                  </span>
+                </div>
+                <ChevronDownIcon className="w-4 h-4 text-gray-400 hidden sm:block" />
+              </div>
+            </button>
+
+            {/* 드롭다운 메뉴 */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                  <div className="text-sm text-gray-500">{user?.email || 'guest@local'}</div>
+                  {isGuestMode && (
+                    <div className="text-xs text-orange-600 mt-1">
+                      게스트 모드 - 데이터는 로컬에만 저장됩니다
+                    </div>
+                  )}
+                </div>
+                
+                <div className="py-1">
+                  <button
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <UserIcon className="w-4 h-4 mr-3" />
+                    프로필
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Cog6ToothIcon className="w-4 h-4 mr-3" />
+                    설정
+                  </button>
+                  
+                  <div className="border-t border-gray-100 my-1"></div>
+                  
+                  {isGuestMode ? (
+                    <a
+                      href="/login"
+                      className="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                    >
+                      <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                      로그인하여 데이터 동기화
+                    </a>
+                  ) : (
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                      로그아웃
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* 클릭 외부 영역 감지를 위한 오버레이 */}
+      {showUserMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </header>
   );
 };

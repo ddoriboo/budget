@@ -13,8 +13,10 @@ import {
   MoneyFlowCard,
   BudgetProgressBar,
   SmartBudgetTracker,
-  InsightsCard
+  InsightsCard,
+  ChatSummaryCard
 } from '@/components/Charts/EChartsComponents';
+import { summarizeChatHistory, ChatSummaryData } from '@/services/chatSummaryService';
 import { MobileOptimizedChart } from '@/components/Charts/MobileOptimizedChart';
 
 export const Dashboard = () => {
@@ -33,6 +35,7 @@ export const Dashboard = () => {
   const [budgetProgressData, setBudgetProgressData] = useState<any[]>([]);
   const [dailySpendingData, setDailySpendingData] = useState<[string, number][]>([]);
   const [insightData, setInsightData] = useState<any>(null);
+  const [chatSummary, setChatSummary] = useState<ChatSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChartsLoading, setIsChartsLoading] = useState(true);
 
@@ -268,8 +271,22 @@ export const Dashboard = () => {
           setIsChartsLoading(false);
         }, 300);
 
-        // 최근 대화 내역 로드
+        // 최근 대화 내역 로드 및 AI 요약 생성
         const chatSessions = expenseStore.getChatSessions();
+        const expenses = await expenseStore.getExpenses();
+        
+        // AI 요약 생성
+        try {
+          const summaryResult = await summarizeChatHistory(chatSessions, expenses);
+          if (summaryResult.success && summaryResult.summary) {
+            setChatSummary(summaryResult.summary);
+          } else if (summaryResult.fallbackSummary) {
+            setChatSummary(summaryResult.fallbackSummary);
+          }
+        } catch (error) {
+          console.error('Chat summary 생성 실패:', error);
+        }
+
         const recentChatData = chatSessions.slice(0, 3).map(session => {
           const lastUserMessage = session.messages
             .slice()
@@ -325,6 +342,7 @@ export const Dashboard = () => {
             budget={stats.budgetSummary?.totalBudget || 0}
             budgetUsed={stats.budgetSummary?.totalSpent || 0}
             daysLeft={getDaysLeftInMonth()}
+            chatSummary={chatSummary}
           />
         </motion.div>
       )}
@@ -445,53 +463,20 @@ export const Dashboard = () => {
         </motion.div>
       </div>
 
-      {/* 최근 대화 내역 */}
+      {/* AI 활동 요약 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
-        className="card p-6"
+        className="mb-6"
       >
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">💬 최근 대화 내역</h3>
-        <div className="space-y-3">
-          {isLoading ? (
-            <RecentChatSkeleton />
-          ) : recentChats.length > 0 ? (
-            recentChats.map((item, index) => (
-              <motion.div 
-                key={index} 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
-                className="flex items-start space-x-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg hover:from-gray-100 hover:to-blue-100 transition-all cursor-pointer border border-gray-200 hover:border-blue-200"
-              >
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-500 mb-1">{item.time}</div>
-                  <div className="text-gray-900 font-medium text-sm mb-1 truncate">"{item.message}"</div>
-                  <div className="text-sm text-blue-600 font-medium">→ {item.result}</div>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="text-center py-8 text-gray-500"
-            >
-              <p className="text-3xl mb-3">💬</p>
-              <p className="font-medium">아직 대화 내역이 없습니다</p>
-              <p className="text-sm mt-2 text-gray-400">채팅으로 첫 가계부를 입력해보세요!</p>
-            </motion.div>
-          )}
-        </div>
-        <div className="mt-6 text-center">
+        <ChatSummaryCard summaryData={chatSummary} />
+        <div className="mt-4 text-center">
           <Link 
             to="/chat" 
             className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            모든 대화 보기 →
+            💬 대화하러 가기 →
           </Link>
         </div>
       </motion.div>

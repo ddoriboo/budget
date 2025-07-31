@@ -487,13 +487,22 @@ export const MoneyFlowCard = ({
   expense, 
   budget, 
   budgetUsed, 
-  daysLeft 
+  daysLeft,
+  chatSummary 
 }: { 
   income: number; 
   expense: number; 
   budget: number; 
   budgetUsed: number; 
-  daysLeft: number; 
+  daysLeft: number;
+  chatSummary?: {
+    recentActivity: string;
+    spendingPattern: string;
+    keyInsights: string[];
+    recommendations: string[];
+    totalTransactions: number;
+    timeframe: string;
+  } | null;
 }) => {
   const remainingBudget = budget - budgetUsed;
   const budgetUtilization = budget > 0 ? (budgetUsed / budget) * 100 : 0;
@@ -569,30 +578,46 @@ export const MoneyFlowCard = ({
 
       {/* 상세 분석 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 페이스 체크 */}
+        {/* AI 활동 요약 */}
         <div className="bg-white rounded-lg p-4 border">
-          <h3 className="font-semibold text-gray-900 mb-3">📊 지출 페이스</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>시간 경과</span>
-              <span>{timeProgress.toFixed(0)}%</span>
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+            <span className="mr-2">🤖</span>
+            AI 활동 요약
+          </h3>
+          {chatSummary ? (
+            <div className="space-y-3">
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  {chatSummary.recentActivity}
+                </p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                <p className="text-xs text-purple-700 font-medium mb-1">지출 패턴</p>
+                <p className="text-sm text-purple-800 leading-relaxed">
+                  {chatSummary.spendingPattern}
+                </p>
+              </div>
+              {chatSummary.keyInsights.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-600 font-medium mb-2">핵심 인사이트</p>
+                  <div className="space-y-1">
+                    {chatSummary.keyInsights.slice(0, 2).map((insight, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <div className="w-1 h-1 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-xs text-gray-700 leading-relaxed">{insight}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${timeProgress}%` }}></div>
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              <p className="text-2xl mb-2">💬</p>
+              <p className="text-sm font-medium">분석할 활동이 없어요</p>
+              <p className="text-xs mt-1 text-gray-400">채팅으로 가계부를 시작해보세요!</p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>지출 진행</span>
-              <span className={spendingProgress > timeProgress ? 'text-red-600' : 'text-green-600'}>
-                {spendingProgress.toFixed(0)}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full ${spendingProgress > timeProgress ? 'bg-red-500' : 'bg-green-500'}`}
-                style={{ width: `${Math.min(spendingProgress, 100)}%` }}
-              ></div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* 월말 예측 */}
@@ -922,6 +947,108 @@ export const InsightsCard = ({
           <p className="text-sm text-gray-600 mt-1">
             전월 대비 {isIncreased ? '🔺' : '🔻'} {Math.abs(lastMonthComparison).toFixed(1)}% {isIncreased ? '증가' : '감소'}
           </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// AI 대화내역 요약 카드
+export const ChatSummaryCard = ({ 
+  summaryData 
+}: { 
+  summaryData: {
+    recentActivity: string;
+    spendingPattern: string;
+    keyInsights: string[];
+    recommendations: string[];
+    totalTransactions: number;
+    timeframe: string;
+  } | null;
+}) => {
+  if (!summaryData) {
+    return (
+      <div className="bg-white rounded-lg p-6 border">
+        <div className="flex items-center space-x-2 mb-4">
+          <span className="text-2xl">🤖</span>
+          <h3 className="font-semibold text-gray-900">AI 활동 요약</h3>
+        </div>
+        <div className="text-center py-6 text-gray-500">
+          <p className="text-3xl mb-3">💬</p>
+          <p className="font-medium">분석할 활동이 없어요</p>
+          <p className="text-sm mt-2 text-gray-400">채팅으로 가계부를 시작해보세요!</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg p-6 border">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <span className="text-2xl">🤖</span>
+          <h3 className="font-semibold text-gray-900">AI 활동 요약</h3>
+        </div>
+        <div className="text-sm text-gray-500">
+          {summaryData.timeframe} • {summaryData.totalTransactions}건
+        </div>
+      </div>
+
+      {/* 최근 활동 요약 */}
+      <div className="mb-4">
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+            <span className="mr-2">📊</span>
+            최근 활동
+          </h4>
+          <p className="text-blue-800 text-sm leading-relaxed">
+            {summaryData.recentActivity}
+          </p>
+        </div>
+      </div>
+
+      {/* 지출 패턴 */}
+      <div className="mb-4">
+        <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+          <h4 className="font-medium text-purple-900 mb-2 flex items-center">
+            <span className="mr-2">🎯</span>
+            지출 패턴
+          </h4>
+          <p className="text-purple-800 text-sm leading-relaxed">
+            {summaryData.spendingPattern}
+          </p>
+        </div>
+      </div>
+
+      {/* 핵심 인사이트 */}
+      <div className="mb-4">
+        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+          <span className="mr-2">💡</span>
+          핵심 인사이트
+        </h4>
+        <div className="space-y-2">
+          {summaryData.keyInsights.map((insight, index) => (
+            <div key={index} className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 leading-relaxed">{insight}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 추천사항 */}
+      <div>
+        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+          <span className="mr-2">🚀</span>
+          추천사항
+        </h4>
+        <div className="space-y-2">
+          {summaryData.recommendations.map((recommendation, index) => (
+            <div key={index} className="flex items-start space-x-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-sm text-gray-700 leading-relaxed">{recommendation}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -2,24 +2,17 @@ import { PlusIcon, ChatBubbleLeftRightIcon, DocumentArrowUpIcon } from '@heroico
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { expenseStore } from '@/store/expenseStore';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer,
-  BarChart,
-  Bar
-} from 'recharts';
 import { StatsCardSkeleton, ChartSkeleton, RecentChatSkeleton } from '@/components/Skeletons/ChartSkeleton';
-import { MobileOptimizedChart, MobileTooltip } from '@/components/Charts/MobileOptimizedChart';
 import { motion } from 'framer-motion';
 import { getCategoryInfo, getCategoryDisplay, getChartColors } from '@/utils/categoryUtils';
+import { 
+  BudgetGaugeChart, 
+  CategoryDonutChart, 
+  MonthlyTrendChart, 
+  BudgetComparisonChart,
+  DailySpendingHeatmap 
+} from '@/components/Charts/EChartsComponents';
+import { MobileOptimizedChart } from '@/components/Charts/MobileOptimizedChart';
 
 export const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -33,17 +26,15 @@ export const Dashboard = () => {
   const [recentChats, setRecentChats] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [budgetComparisonData, setBudgetComparisonData] = useState<any[]>([]);
+  const [dailySpendingData, setDailySpendingData] = useState<[string, number][]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChartsLoading, setIsChartsLoading] = useState(true);
-  const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
-
-  // 차트 색상 (카테고리별 색상 사용)
-  const COLORS = getChartColors();
 
   // 월별 트렌드 데이터 생성
   const generateMonthlyData = async () => {
     const expenses = await expenseStore.getExpenses();
-    const monthlyStats: Record<string, { month: string; 지출: number; 수입: number }> = {};
+    const monthlyStats: Record<string, { month: string; expense: number; income: number }> = {};
     
     // 최근 6개월 데이터 초기화
     for (let i = 5; i >= 0; i--) {
@@ -51,7 +42,7 @@ export const Dashboard = () => {
       date.setMonth(date.getMonth() - i);
       const monthKey = date.toISOString().slice(0, 7); // YYYY-MM
       const monthName = date.toLocaleDateString('ko-KR', { month: 'short' });
-      monthlyStats[monthKey] = { month: monthName, 지출: 0, 수입: 0 };
+      monthlyStats[monthKey] = { month: monthName, expense: 0, income: 0 };
     }
 
     // 실제 데이터 집계
@@ -59,9 +50,9 @@ export const Dashboard = () => {
       const monthKey = expense.date.slice(0, 7);
       if (monthlyStats[monthKey]) {
         if (expense.type === 'income') {
-          monthlyStats[monthKey].수입 += expense.amount;
+          monthlyStats[monthKey].income += expense.amount;
         } else {
-          monthlyStats[monthKey].지출 += expense.amount;
+          monthlyStats[monthKey].expense += expense.amount;
         }
       }
     });
@@ -83,14 +74,44 @@ export const Dashboard = () => {
     }, {} as Record<string, number>);
 
     return Object.entries(categoryStats)
-      .map(([name, value]) => ({ 
-        name, 
-        value,
-        displayName: getCategoryDisplay(name),
-        categoryInfo: getCategoryInfo(name)
-      }))
+      .map(([name, value]) => { 
+        const info = getCategoryInfo(name);
+        return {
+          name: getCategoryDisplay(name), 
+          value,
+          color: info.color
+        };
+      })
       .sort((a, b) => b.value - a.value)
       .slice(0, 8); // 상위 8개 카테고리만
+  };
+
+  // 예산 비교 데이터 생성
+  const generateBudgetComparisonData = () => {
+    const comparison = expenseStore.getCategoryBudgetComparison();
+    return comparison
+      .filter(item => item.amount > 0)
+      .map(item => ({
+        category: getCategoryDisplay(item.categoryName),
+        budget: item.amount,
+        actual: item.actualSpent
+      }))
+      .slice(0, 6); // 상위 6개만
+  };
+
+  // 일별 지출 히트맵 데이터 생성
+  const generateDailySpendingData = async () => {
+    const expenses = await expenseStore.getExpenses();
+    const dailyStats: Record<string, number> = {};
+    
+    expenses
+      .filter(e => e.type === 'expense')
+      .forEach(expense => {
+        const date = expense.date;
+        dailyStats[date] = (dailyStats[date] || 0) + expense.amount;
+      });
+
+    return Object.entries(dailyStats).map(([date, amount]) => [date, amount] as [string, number]);
   };
 
   useEffect(() => {
@@ -113,8 +134,13 @@ export const Dashboard = () => {
         setTimeout(async () => {
           const monthlyData = await generateMonthlyData();
           const categoryData = await generateCategoryData();
+          const budgetData = generateBudgetComparisonData();
+          const dailyData = await generateDailySpendingData();
+          
           setMonthlyData(monthlyData);
           setCategoryData(categoryData);
+          setBudgetComparisonData(budgetData);
+          setDailySpendingData(dailyData);
           setIsChartsLoading(false);
         }, 300);
 
@@ -327,118 +353,31 @@ export const Dashboard = () => {
           title="월별 지출 트렌드"
           isLoading={isChartsLoading}
         >
-          <LineChart data={monthlyData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis 
-              dataKey="month" 
-              stroke="#666"
-              fontSize={window.innerWidth < 640 ? 10 : 12}
-              tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }}
-            />
-            <YAxis 
-              stroke="#666"
-              fontSize={window.innerWidth < 640 ? 10 : 12}
-              tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }}
-              tickFormatter={(value) => `${(value / 10000).toFixed(0)}만`}
-            />
-            <Tooltip content={<MobileTooltip />} />
-            <Line 
-              type="monotone" 
-              dataKey="지출" 
-              stroke="#dc2626" 
-              strokeWidth={window.innerWidth < 640 ? 2 : 3}
-              dot={{ fill: '#dc2626', strokeWidth: 2, r: window.innerWidth < 640 ? 3 : 4 }}
-              activeDot={{ r: window.innerWidth < 640 ? 5 : 6, fill: '#dc2626' }}
-              animationDuration={1000}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="수입" 
-              stroke="#03C75A" 
-              strokeWidth={window.innerWidth < 640 ? 2 : 3}
-              dot={{ fill: '#03C75A', strokeWidth: 2, r: window.innerWidth < 640 ? 3 : 4 }}
-              activeDot={{ r: window.innerWidth < 640 ? 5 : 6, fill: '#03C75A' }}
-              animationDuration={1000}
-            />
-          </LineChart>
+          {monthlyData.length > 0 ? (
+            <MonthlyTrendChart data={monthlyData} />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+              >
+                <p className="text-lg mb-2">📈</p>
+                <p className="text-sm">월별 데이터가 없습니다</p>
+                <p className="text-xs mt-1">지출을 입력하여 트렌드를 확인해보세요!</p>
+              </motion.div>
+            </div>
+          )}
         </MobileOptimizedChart>
 
         {/* 카테고리별 지출 */}
         <MobileOptimizedChart
           title="이번 달 카테고리별 지출"
           isLoading={isChartsLoading}
-          className="relative"
         >
           {categoryData.length > 0 ? (
-            <>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={window.innerWidth < 640 ? 30 : 40}
-                  outerRadius={window.innerWidth < 640 ? 60 : 80}
-                  paddingAngle={2}
-                  dataKey="value"
-                  animationBegin={200}
-                  animationDuration={800}
-                  onMouseEnter={(_, index) => setHoveredSegment(index)}
-                  onMouseLeave={() => setHoveredSegment(null)}
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[index % COLORS.length]}
-                      stroke={hoveredSegment === index ? '#fff' : 'none'}
-                      strokeWidth={hoveredSegment === index ? 2 : 0}
-                      style={{
-                        filter: hoveredSegment === index ? 'brightness(1.1)' : 'none',
-                        transform: hoveredSegment === index ? 'scale(1.05)' : 'scale(1)',
-                        transformOrigin: 'center',
-                        transition: 'all 0.2s ease-in-out'
-                      }}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<MobileTooltip />} />
-              </PieChart>
-              
-              {/* 범례 */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="absolute bottom-0 left-0 right-0 p-4"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/90 backdrop-blur-sm rounded-lg p-3">
-                  {categoryData.map((entry, index) => (
-                    <motion.div 
-                      key={entry.name} 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.2 + index * 0.1 }}
-                      className="flex items-center text-sm cursor-pointer hover:bg-gray-50 rounded p-1 transition-colors"
-                      onMouseEnter={() => setHoveredSegment(index)}
-                      onMouseLeave={() => setHoveredSegment(null)}
-                    >
-                      <div 
-                        className="w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center text-sm"
-                        style={{ 
-                          backgroundColor: entry.categoryInfo?.color || COLORS[index % COLORS.length],
-                          color: 'white'
-                        }}
-                      >
-                        {entry.categoryInfo?.emoji || '📊'}
-                      </div>
-                      <span className="truncate font-medium">{entry.displayName || entry.name}</span>
-                      <span className="ml-auto text-gray-600 font-medium">
-                        ₩{entry.value.toLocaleString()}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            </>
+            <CategoryDonutChart data={categoryData} />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">
               <motion.div 
@@ -455,6 +394,44 @@ export const Dashboard = () => {
           )}
         </MobileOptimizedChart>
       </div>
+
+      {/* 예산 관련 차트들 */}
+      {stats.budgetSummary && stats.budgetSummary.totalBudget > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* 예산 게이지 차트 */}
+          <MobileOptimizedChart
+            title="이번 달 예산 사용률"
+            isLoading={isChartsLoading}
+          >
+            <BudgetGaugeChart 
+              percentage={stats.budgetSummary.utilizationPercentage || 0}
+              amount={stats.budgetSummary.totalSpent || 0}
+              total={stats.budgetSummary.totalBudget || 0}
+            />
+          </MobileOptimizedChart>
+
+          {/* 예산 vs 실제 지출 비교 */}
+          {budgetComparisonData.length > 0 && (
+            <MobileOptimizedChart
+              title="카테고리별 예산 vs 실제 지출"
+              isLoading={isChartsLoading}
+            >
+              <BudgetComparisonChart data={budgetComparisonData} />
+            </MobileOptimizedChart>
+          )}
+        </div>
+      )}
+
+      {/* 일별 지출 히트맵 */}
+      {dailySpendingData.length > 0 && (
+        <MobileOptimizedChart
+          title="일별 지출 패턴"
+          isLoading={isChartsLoading}
+          height="h-48 sm:h-64"
+        >
+          <DailySpendingHeatmap data={dailySpendingData} />
+        </MobileOptimizedChart>
+      )}
 
       {/* 최근 대화 내역 */}
       <motion.div

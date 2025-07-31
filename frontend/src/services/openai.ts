@@ -397,7 +397,10 @@ const analyzeExpenseFallback = (message: string): {
                    lowerMessage.includes('수입') || lowerMessage.includes('들어왔');
   
   // 메시지를 쉼표로 분리해서 각 항목 분석
-  const items = message.split(',').map(item => item.trim());
+  // 쉼표가 없으면 전체 메시지를 하나의 항목으로 처리
+  const items = message.includes(',') 
+    ? message.split(',').map(item => item.trim())
+    : [message.trim()];
   console.log('🔍 분리된 항목들:', items);
   
   items.forEach((item) => {
@@ -482,6 +485,28 @@ const analyzeExpenseFallback = (message: string): {
   
   console.log('✅ Fallback 분석 완료. 거래 수:', expenses.length);
   console.log('📊 분석된 거래들:', expenses);
+  
+  // 아무 거래도 파싱하지 못했다면 기본값 반환
+  if (expenses.length === 0) {
+    console.log('⚠️ 거래를 파싱하지 못했습니다. 기본값 반환');
+    
+    // 예산 관련 메시지인지 확인
+    if (lowerMessage.includes('예산') && lowerMessage.includes('만원')) {
+      return {
+        success: false,
+        expenses: [],
+        clarification_needed: true,
+        clarification_message: '예산 설정을 원하시나요? 예: "식비 예산 30만원으로 설정해줘"'
+      };
+    }
+    
+    return {
+      success: false,
+      expenses: [],
+      clarification_needed: true,
+      clarification_message: '금액 정보를 찾을 수 없어요. 예: "어제 스타벅스에서 5천원 썼어"와 같이 구체적으로 말씀해주세요.'
+    };
+  }
   
   return {
     success: true,

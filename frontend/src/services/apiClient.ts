@@ -42,9 +42,9 @@ export class ApiClient {
         headers.Authorization = `Bearer ${this.token}`;
       }
 
-      // 타임아웃 설정 (10초)
+      // 타임아웃 설정 (3초로 단축)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       const response = await fetch(url, {
         ...options,
@@ -68,7 +68,12 @@ export class ApiClient {
         data,
       };
     } catch (error) {
-      console.error('API Request failed:', error);
+      // 백엔드 연결 실패는 예상된 상황이므로 warn으로 변경
+      if (url.includes('localhost:4000')) {
+        console.warn('백엔드 서버가 실행되지 않았습니다. LocalStorage 모드로 작동합니다.');
+      } else {
+        console.error('API Request failed:', error);
+      }
       
       let errorMessage = 'Network error';
       if (error instanceof Error) {

@@ -1,12 +1,12 @@
 // Intent Analysis Service - LLM Orchestration의 핵심
 
 export enum UserIntent {
-  EXPENSE_INCOME = 'expense_income',
-  BUDGET_SETTING = 'budget_setting', 
-  GOAL_SETTING = 'goal_setting',
-  ANALYSIS_REQUEST = 'analysis_request',
-  GENERAL_INQUIRY = 'general_inquiry',
-  ACCOUNT_MANAGEMENT = 'account_management'
+  EXPENSE_INCOME = 'EXPENSE_INCOME',
+  BUDGET_SETTING = 'BUDGET_SETTING', 
+  GOAL_SETTING = 'GOAL_SETTING',
+  ANALYSIS_REQUEST = 'ANALYSIS_REQUEST',
+  GENERAL_INQUIRY = 'GENERAL_INQUIRY',
+  ACCOUNT_MANAGEMENT = 'ACCOUNT_MANAGEMENT'
 }
 
 export interface IntentAnalysisResult {

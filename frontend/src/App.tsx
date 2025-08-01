@@ -15,17 +15,9 @@ function App() {
     <AuthProvider>
       <div className="App">
         <Routes>
-          {/* 인증 관련 라우트 (레이아웃 없음) */}
-          <Route path="/login" element={
-            <ProtectedRoute>
-              <Login />
-            </ProtectedRoute>
-          } />
-          <Route path="/register" element={
-            <ProtectedRoute>
-              <Register />
-            </ProtectedRoute>
-          } />
+          {/* 인증 관련 라우트 (레이아웃 없음, ProtectedRoute 제거) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* 메인 레이아웃을 사용하는 보호된 라우트들 */}
           <Route path="/" element={

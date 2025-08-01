@@ -1,14 +1,23 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BellIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 
 export const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, logout, isGuestMode } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
     setShowUserMenu(false);
+    // 로그아웃 후 로그인 페이지로 이동
+    navigate('/login');
+  };
+
+  const handleLoginClick = () => {
+    setShowUserMenu(false);
+    navigate('/login');
   };
 
   const getInitials = (name: string) => {
@@ -116,13 +125,13 @@ export const Header = () => {
                   <div className="border-t border-gray-100 my-1"></div>
                   
                   {isGuestMode ? (
-                    <a
-                      href="/login"
+                    <button
+                      onClick={handleLoginClick}
                       className="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
                     >
                       <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
                       로그인하여 데이터 동기화
-                    </a>
+                    </button>
                   ) : (
                     <button
                       onClick={handleLogout}

@@ -23,19 +23,25 @@ export const ProtectedRoute = ({ children, requireAuth = false }: ProtectedRoute
     );
   }
 
-  // 인증이 필요한 페이지인데 로그인되지 않은 경우
-  if (requireAuth && !isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  // 로그인/회원가입 페이지는 항상 접근 가능
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  
+  // 로그인/회원가입 페이지가 아닌 경우에만 인증 체크
+  if (!isAuthPage) {
+    // 인증이 필요한 페이지인데 로그인되지 않은 경우
+    if (requireAuth && !isAuthenticated) {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
 
-  // 게스트 모드도 허용하지 않는 페이지인데 게스트인 경우
-  if (requireAuth && isGuestMode) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // 인증된 사용자가 로그인/회원가입 페이지에 접근하려는 경우
-  if (isAuthenticated && (location.pathname === '/login' || location.pathname === '/register')) {
-    return <Navigate to="/dashboard" replace />;
+    // 게스트 모드도 허용하지 않는 페이지인데 게스트인 경우
+    if (requireAuth && isGuestMode) {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+    
+    // 아무 인증도 없는 경우 (게스트도 아닌 경우) 로그인 페이지로
+    if (!isAuthenticated && !isGuestMode) {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
   }
 
   return <>{children}</>;

@@ -43,6 +43,13 @@ export const Login = () => {
     navigate('/dashboard');
   };
 
+  // localStorage 디버깅용
+  const clearAllData = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
       <motion.div
@@ -170,6 +177,16 @@ export const Login = () => {
                 회원가입
               </Link>
             </p>
+          </div>
+
+          {/* 디버그용 - 프로덕션에서는 제거 */}
+          <div className="mt-4 text-center">
+            <button
+              onClick={clearAllData}
+              className="text-xs text-gray-400 hover:text-gray-600 underline"
+            >
+              모든 로컬 데이터 초기화
+            </button>
           </div>
         </motion.div>
 

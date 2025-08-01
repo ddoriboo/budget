@@ -8,6 +8,7 @@ import {
   Cog6ToothIcon 
 } from '@heroicons/react/24/outline';
 import { expenseStore } from '@/store/expenseStore';
+import { useAuth } from '@/hooks/useAuth';
 
 const navigation = [
   { name: '대시보드', href: '/dashboard', icon: HomeIcon },
@@ -18,6 +19,7 @@ const navigation = [
 ];
 
 export const Sidebar = () => {
+  const { user, isGuestMode } = useAuth();
   const [stats, setStats] = useState({
     totalAmount: 0,
     totalExpenses: 0,
@@ -110,12 +112,18 @@ export const Sidebar = () => {
       {/* 하단 정보 */}
       <div className="p-3 lg:p-6 border-t border-gray-700 flex-shrink-0">
         <div className="flex items-center min-w-0">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-sm font-medium">김</span>
+          <div className={`w-8 h-8 ${isGuestMode ? 'bg-gray-400' : 'bg-primary'} rounded-full flex items-center justify-center flex-shrink-0`}>
+            <span className="text-white text-sm font-medium">
+              {isGuestMode ? '게' : (user?.name || '사용자').charAt(0)}
+            </span>
           </div>
           <div className="ml-2 lg:ml-3 min-w-0 flex-1">
-            <div className="text-sm font-medium truncate">김머니</div>
-            <div className="text-xs text-gray-400 truncate">kim@example.com</div>
+            <div className="text-sm font-medium truncate">
+              {isGuestMode ? '게스트 사용자' : (user?.name || '사용자')}
+            </div>
+            <div className="text-xs text-gray-400 truncate">
+              {user?.email || 'guest@local'}
+            </div>
           </div>
         </div>
       </div>

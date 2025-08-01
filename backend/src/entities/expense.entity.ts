@@ -19,13 +19,13 @@ export class Expense {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   amount: number;
 
-  @Column({ nullable: true })
+  @Column({ name: 'category_id', nullable: true })
   categoryId?: string;
 
   @Column({ length: 200, nullable: true })
@@ -60,10 +60,10 @@ export class Expense {
 
   // Relations
   @ManyToOne(() => User, (user) => user.expenses, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @ManyToOne(() => Category, (category) => category.expenses, { nullable: true })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: 'category_id' })
   category?: Category;
 }

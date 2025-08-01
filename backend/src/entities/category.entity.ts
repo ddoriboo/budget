@@ -13,19 +13,15 @@ import { Expense } from './expense.entity';
 
 @Entity('categories')
 @Index('idx_categories_user', ['userId'])
-@Index('idx_categories_parent', ['parentId'])
 export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   @Column({ length: 100 })
   name: string;
-
-  @Column({ nullable: true })
-  parentId?: string;
 
   @Column({ length: 7, default: '#03C75A' })
   color: string;
@@ -41,11 +37,11 @@ export class Category {
 
   // Relations
   @ManyToOne(() => User, (user) => user.categories, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @ManyToOne(() => Category, (category) => category.children, { nullable: true })
-  @JoinColumn({ name: 'parentId' })
+  @JoinColumn({ name: 'parent_id' })
   parent?: Category;
 
   @OneToMany(() => Category, (category) => category.parent)

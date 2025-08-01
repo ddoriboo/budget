@@ -30,19 +30,24 @@ export class CategoryService {
   async findAllByUser(userId: string): Promise<Category[]> {
     return await this.categoryRepository.find({
       where: [
-        { userId }, // 사용자 카테고리
-        { userId: null, isSystem: true }, // 시스템 카테고리
+        { user: { id: userId } }, // 사용자 카테고리
+        { user: null, isSystem: true }, // 시스템 카테고리
       ],
-      relations: ['parent', 'children'],
+      relations: ['parent', 'children', 'user'],
       order: { createdAt: 'ASC' },
     });
   }
 
   // 카테고리 생성
   async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<Category> {
+    const user = await this.dataSource.getRepository('User').findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const category = this.categoryRepository.create({
       ...createCategoryDto,
-      userId,
+      user,
       isSystem: false,
     });
 
@@ -52,7 +57,8 @@ export class CategoryService {
   // 카테고리 수정
   async update(id: string, updateCategoryDto: UpdateCategoryDto, userId: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
-      where: { id, userId },
+      where: { id, user: { id: userId } },
+      relations: ['user'],
     });
 
     if (!category) {

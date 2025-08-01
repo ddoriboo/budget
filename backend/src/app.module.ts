@@ -36,7 +36,7 @@ import { SnakeNamingStrategy } from './config/naming.strategy';
         type: 'postgres',
         url: configService.get('DATABASE_URL'),
         entities: [User, Expense, Category, ChatSession, ExcelUpload],
-        synchronize: configService.get('NODE_ENV') === 'development',
+        synchronize: true, // 개발 환경에서 테이블 자동 생성
         logging: configService.get('NODE_ENV') === 'development',
         namingStrategy: new SnakeNamingStrategy(),
         ssl: configService.get('NODE_ENV') === 'production' ? { 

@@ -76,8 +76,8 @@ export class CategoryService {
   // 카테고리 삭제
   async remove(id: string, userId: string): Promise<void> {
     const category = await this.categoryRepository.findOne({
-      where: { id, userId },
-      relations: ['expenses'],
+      where: { id, user: { id: userId } },
+      relations: ['expenses', 'user'],
     });
 
     if (!category) {
@@ -99,10 +99,10 @@ export class CategoryService {
   async findOne(id: string, userId: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: [
-        { id, userId },
-        { id, userId: null, isSystem: true },
+        { id, user: { id: userId } },
+        { id, user: null, isSystem: true },
       ],
-      relations: ['parent', 'children'],
+      relations: ['parent', 'children', 'user'],
     });
 
     if (!category) {
@@ -120,7 +120,7 @@ export class CategoryService {
   // 시스템 카테고리 조회
   async getSystemCategories(): Promise<Category[]> {
     return await this.categoryRepository.find({
-      where: { isSystem: true, userId: null },
+      where: { isSystem: true, user: null },
       relations: ['children'],
       order: { createdAt: 'ASC' },
     });

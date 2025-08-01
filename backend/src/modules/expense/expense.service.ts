@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, FindManyOptions } from 'typeorm';
+import { Repository, Between, FindManyOptions, DataSource } from 'typeorm';
 import { Expense } from '../../entities/expense.entity';
 import { Category } from '../../entities/category.entity';
 import { CreateExpenseDto, UpdateExpenseDto, ExpenseQueryDto } from '../../dto/expense.dto';
@@ -12,13 +12,19 @@ export class ExpenseService {
     private expenseRepository: Repository<Expense>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    private dataSource: DataSource,
   ) {}
 
   // 지출 생성
   async create(createExpenseDto: CreateExpenseDto, userId: string): Promise<Expense> {
+    const user = await this.dataSource.getRepository('User').findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const expense = this.expenseRepository.create({
       ...createExpenseDto,
-      userId,
+      user,
     });
 
     return await this.expenseRepository.save(expense);
@@ -46,7 +52,7 @@ export class ExpenseService {
     const queryBuilder = this.expenseRepository
       .createQueryBuilder('expense')
       .leftJoinAndSelect('expense.category', 'category')
-      .where('expense.userId = :userId', { userId });
+      .where('expense.user.id = :userId', { userId });
 
     // 카테고리 필터
     if (category) {
@@ -91,8 +97,8 @@ export class ExpenseService {
   // 특정 지출 조회
   async findOne(id: string, userId: string): Promise<Expense> {
     const expense = await this.expenseRepository.findOne({
-      where: { id, userId },
-      relations: ['category'],
+      where: { id, user: { id: userId } },
+      relations: ['category', 'user'],
     });
 
     if (!expense) {
@@ -128,7 +134,7 @@ export class ExpenseService {
 
     const expenses = await this.expenseRepository.find({
       where: {
-        userId,
+        user: { id: userId },
         expenseDate: Between(startDate, endDate),
         isIncome: false,
       },
@@ -175,7 +181,7 @@ export class ExpenseService {
   // 최근 지출 조회
   async getRecentExpenses(userId: string, limit: number = 10): Promise<Expense[]> {
     return await this.expenseRepository.find({
-      where: { userId },
+      where: { user: { id: userId } },
       relations: ['category'],
       order: { createdAt: 'DESC' },
       take: limit,

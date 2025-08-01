@@ -30,7 +30,40 @@ const EXPENSES_KEY = 'moneychat_expenses';
 const CHAT_SESSIONS_KEY = 'moneychat_chat_sessions';
 
 class ExpenseStore {
-  private useApi: boolean = false; // 오프라인 모드: LocalStorage만 사용
+  private useApi: boolean = false; // API 사용 여부 (로그인 상태에 따라 변경)
+  private eventListeners: Array<() => void> = []; // 데이터 변경 이벤트 리스너
+
+  // 로그인 상태에 따라 API 사용 여부 설정
+  setApiMode(useApi: boolean): void {
+    this.useApi = useApi;
+    console.log(`📡 ExpenseStore API 모드: ${useApi ? 'ON (서버 데이터)' : 'OFF (로컬 데이터)'}`);
+  }
+
+  // 현재 API 모드 확인
+  isUsingApi(): boolean {
+    return this.useApi;
+  }
+
+  // 데이터 변경 이벤트 리스너 추가
+  addChangeListener(listener: () => void): void {
+    this.eventListeners.push(listener);
+  }
+
+  // 데이터 변경 이벤트 리스너 제거
+  removeChangeListener(listener: () => void): void {
+    this.eventListeners = this.eventListeners.filter(l => l !== listener);
+  }
+
+  // 데이터 변경 알림
+  private notifyChange(): void {
+    this.eventListeners.forEach(listener => {
+      try {
+        listener();
+      } catch (error) {
+        console.error('ExpenseStore listener error:', error);
+      }
+    });
+  }
 
   // LocalStorage 우선 사용 (오프라인 모드)
   private async withFallback<T>(
@@ -128,6 +161,7 @@ class ExpenseStore {
           const localExpenses = this.getExpensesSync();
           localExpenses.push(createdExpense);
           this.saveExpenses(localExpenses);
+          this.notifyChange(); // 데이터 변경 알림
           return createdExpense;
         }
         throw new Error('지출 생성 API 실패');
@@ -149,6 +183,7 @@ class ExpenseStore {
           BudgetStore.updateSpentAmount(expense.category, expense.amount);
         }
         
+        this.notifyChange(); // 데이터 변경 알림
         return newExpense;
       },
       '지출 추가 실패'

@@ -206,23 +206,25 @@ export const Chat = () => {
     }
   };
 
-  const handleConfirmExpense = (_messageId: string, data: any) => {
+  const handleConfirmExpense = async (_messageId: string, data: any) => {
     if (!currentSession) return;
     
     if (data.multipleTransactions && data.transactions) {
       // 복수 거래 저장
-      const savedExpenses = data.transactions.map((transaction: any) => {
-        return expenseStore.addExpense({
-          date: transaction.date,
-          amount: transaction.amount,
-          category: transaction.category,
-          subcategory: transaction.subcategory,
-          place: transaction.place,
-          memo: transaction.memo,
-          confidence: transaction.confidence,
-          type: transaction.type || 'expense',
-        });
-      });
+      const savedExpenses = await Promise.all(
+        data.transactions.map(async (transaction: any) => {
+          return await expenseStore.addExpense({
+            date: transaction.date,
+            amount: transaction.amount,
+            category: transaction.category,
+            subcategory: transaction.subcategory,
+            place: transaction.place,
+            memo: transaction.memo,
+            confidence: transaction.confidence,
+            type: transaction.type || 'expense',
+          });
+        })
+      );
       
       // 요약 메시지 생성
       const expenseCount = data.transactions.filter((t: any) => t.type === 'expense').length;
@@ -269,7 +271,7 @@ export const Chat = () => {
       console.log('저장된 데이터:', savedExpenses);
     } else {
       // 단일 거래 저장 (기존 로직)
-      const savedExpense = expenseStore.addExpense({
+      const savedExpense = await expenseStore.addExpense({
         date: data.date,
         amount: data.amount,
         category: data.category,

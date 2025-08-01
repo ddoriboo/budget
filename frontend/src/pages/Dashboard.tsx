@@ -320,6 +320,13 @@ export const Dashboard = () => {
     };
 
     loadData();
+    
+    // ExpenseStore 변경 이벤트 리스너 등록
+    expenseStore.addChangeListener(loadData);
+
+    return () => {
+      expenseStore.removeChangeListener(loadData);
+    };
   }, []);
 
   return (

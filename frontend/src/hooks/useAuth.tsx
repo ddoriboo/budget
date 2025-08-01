@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { authService, User, LoginRequest, RegisterRequest } from '../services/authService';
+import { expenseStore } from '../store/expenseStore';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -32,6 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (storedUser) {
           setUser(storedUser);
           
+          // API 모드 설정 (게스트 모드가 아니면 API 사용)
+          const shouldUseApi = !authService.isGuestMode();
+          expenseStore.setApiMode(shouldUseApi);
+          
           // 토큰 유효성 검증 (게스트 모드가 아닐 때만)
           if (!authService.isGuestMode()) {
             try {
@@ -40,13 +45,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setUser(verifiedUser);
               } else {
                 setUser(null);
+                expenseStore.setApiMode(false); // 토큰 무효 시 로컬 모드
               }
             } catch (error) {
               console.error('Token verification failed:', error);
               setUser(null);
+              expenseStore.setApiMode(false); // 에러 시 로컬 모드
             }
           }
         }
+      } else {
+        expenseStore.setApiMode(false); // 비로그인 시 로컬 모드
       }
       
       setIsLoading(false);
@@ -63,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.login(credentials);
       if (response.success && response.data) {
         setUser(response.data.user);
+        expenseStore.setApiMode(true); // 로그인 성공 시 API 모드 활성화
         toast.success(response.message || '로그인되었습니다.');
         console.log('✅ 로그인 성공:', response.data.user);
         return true;
@@ -91,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.register(userData);
       if (response.success && response.data) {
         setUser(response.data.user);
+        expenseStore.setApiMode(true); // 회원가입 성공 시 API 모드 활성화
         toast.success(response.message || '회원가입이 완료되었습니다.');
         return true;
       }
@@ -111,12 +122,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('🚪 로그아웃 시도');
       await authService.logout();
       setUser(null);
+      expenseStore.setApiMode(false); // 로그아웃 시 로컬 모드로 전환
       console.log('✅ 로그아웃 성공');
       toast.success('로그아웃되었습니다.');
     } catch (error) {
       console.error('❌ 로그아웃 에러:', error);
       // 로그아웃은 실패해도 로컬 상태는 정리
       setUser(null);
+      expenseStore.setApiMode(false); // 에러 시에도 로컬 모드로 전환
       toast.success('로그아웃되었습니다.'); // 사용자에게는 성공으로 표시
     } finally {
       setIsLoading(false);
@@ -155,6 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     authService.enableGuestMode();
     const guestUser = authService.getUser();
     setUser(guestUser);
+    expenseStore.setApiMode(false); // 게스트 모드는 로컬 모드
     toast.success('게스트 모드로 시작합니다.');
   };
 

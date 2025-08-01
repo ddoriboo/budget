@@ -38,16 +38,16 @@ export const Sidebar = () => {
 
     updateStats();
     
+    // ExpenseStore 변경 이벤트 리스너 등록
+    expenseStore.addChangeListener(updateStats);
+    
     // localStorage 변경 감지 (다른 탭에서 데이터 변경 시)
     const handleStorageChange = () => updateStats();
     window.addEventListener('storage', handleStorageChange);
-    
-    // 컴포넌트 내에서 변경 감지를 위한 폴링 (개선 여지 있음)
-    const interval = setInterval(updateStats, 1000);
 
     return () => {
+      expenseStore.removeChangeListener(updateStats);
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
 

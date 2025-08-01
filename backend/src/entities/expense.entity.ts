@@ -12,21 +12,15 @@ import { User } from './user.entity';
 import { Category } from './category.entity';
 
 @Entity('expenses')
-@Index('idx_expenses_user_date', ['userId', 'expenseDate'])
-@Index('idx_expenses_category', ['userId', 'categoryId'])
+@Index('idx_expenses_user_date', ['user', 'expenseDate'])
+@Index('idx_expenses_category', ['user', 'category'])
 @Index('idx_expenses_conversation', ['conversationId'])
 export class Expense {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id' })
-  userId: string;
-
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   amount: number;
-
-  @Column({ name: 'category_id', nullable: true })
-  categoryId?: string;
 
   @Column({ length: 200, nullable: true })
   place?: string;

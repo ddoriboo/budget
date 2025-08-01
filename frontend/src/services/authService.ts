@@ -36,7 +36,7 @@ export interface ApiResponse<T = any> {
   data?: T;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:4000' : '/api');
 const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === 'true';
 
 // 디버깅을 위한 환경 변수 로그

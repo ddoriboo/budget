@@ -37,6 +37,7 @@ export interface ApiResponse<T = any> {
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === 'true';
 
 class AuthService {
   private tokenKey = 'moneychat_token';
@@ -68,6 +69,11 @@ class AuthService {
 
   // API 요청 헬퍼
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    // 오프라인 모드일 때는 API 요청하지 않음
+    if (OFFLINE_MODE) {
+      throw new Error('오프라인 모드입니다. 게스트 모드를 사용해주세요.');
+    }
+
     const token = this.getToken();
     
     const config: RequestInit = {
@@ -80,23 +86,28 @@ class AuthService {
     };
 
     try {
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${API_BASE_URL}${endpoint}`);
+      
       const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
       const data = await response.json();
 
+      console.log(`✅ API Response: ${response.status}`, data);
+
       if (!response.ok) {
+        console.error(`❌ API Error: ${response.status}`, data);
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error('❌ API Request failed:', error);
       throw error;
     }
   }
 
   // 회원가입
   async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response = await this.makeRequest<AuthResponse>('/auth/register', {
+    const response = await this.makeRequest<AuthResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -111,7 +122,7 @@ class AuthService {
 
   // 로그인
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await this.makeRequest<AuthResponse>('/auth/login', {
+    const response = await this.makeRequest<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -127,7 +138,7 @@ class AuthService {
   // 로그아웃
   async logout(): Promise<void> {
     try {
-      await this.makeRequest('/auth/logout', {
+      await this.makeRequest('/api/auth/logout', {
         method: 'POST',
       });
     } catch (error) {
@@ -140,7 +151,7 @@ class AuthService {
   // 토큰 검증
   async verifyToken(): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/auth/verify');
+      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/verify');
       if (response.success && response.data) {
         this.setUser(response.data);
         return response.data;
@@ -156,7 +167,7 @@ class AuthService {
   // 프로필 조회
   async getProfile(): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/auth/profile');
+      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/profile');
       if (response.success && response.data) {
         this.setUser(response.data);
         return response.data;
@@ -171,7 +182,7 @@ class AuthService {
   // 프로필 업데이트
   async updateProfile(updates: Partial<Pick<User, 'name' | 'profileImage' | 'settings'>>): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/auth/profile', {
+      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/profile', {
         method: 'PUT',
         body: JSON.stringify(updates),
       });
@@ -189,7 +200,7 @@ class AuthService {
 
   // 비밀번호 변경
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await this.makeRequest('/auth/change-password', {
+    await this.makeRequest('/api/auth/change-password', {
       method: 'PUT',
       body: JSON.stringify({
         currentPassword,
@@ -201,7 +212,7 @@ class AuthService {
   // 토큰 갱신
   async refreshToken(): Promise<string | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<{ token: string }>>('/auth/refresh', {
+      const response = await this.makeRequest<ApiResponse<{ token: string }>>('/api/auth/refresh', {
         method: 'POST',
       });
 

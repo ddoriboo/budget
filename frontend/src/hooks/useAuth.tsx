@@ -58,17 +58,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginRequest): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log('🔐 로그인 시도:', credentials.email);
+      
       const response = await authService.login(credentials);
       if (response.success && response.data) {
         setUser(response.data.user);
         toast.success(response.message || '로그인되었습니다.');
+        console.log('✅ 로그인 성공:', response.data.user);
         return true;
       }
+      console.log('❌ 로그인 실패:', response);
       toast.error(response.message || '로그인에 실패했습니다.');
       return false;
     } catch (error: any) {
-      console.error('Login failed:', error);
-      toast.error(error.message || '로그인 중 오류가 발생했습니다.');
+      console.error('❌ 로그인 에러:', error);
+      
+      // 오프라인 모드 에러 처리
+      if (error.message?.includes('오프라인 모드')) {
+        toast.error('현재 오프라인 모드입니다. 게스트 모드를 사용해주세요.');
+      } else {
+        toast.error(error.message || '로그인 중 오류가 발생했습니다.');
+      }
       return false;
     } finally {
       setIsLoading(false);
@@ -98,13 +108,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
+      console.log('🚪 로그아웃 시도');
       await authService.logout();
       setUser(null);
+      console.log('✅ 로그아웃 성공');
       toast.success('로그아웃되었습니다.');
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('❌ 로그아웃 에러:', error);
       // 로그아웃은 실패해도 로컬 상태는 정리
       setUser(null);
+      toast.success('로그아웃되었습니다.'); // 사용자에게는 성공으로 표시
     } finally {
       setIsLoading(false);
     }

@@ -14,9 +14,6 @@ export class ChatSession {
   @PrimaryColumn({ length: 100 })
   id: string;
 
-  @Column()
-  userId: string;
-
   @Column({ type: 'jsonb', default: '{}' })
   context: Record<string, any>;
 
@@ -31,6 +28,6 @@ export class ChatSession {
 
   // Relations
   @ManyToOne(() => User, (user) => user.chatSessions, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }

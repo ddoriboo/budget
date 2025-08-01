@@ -19,8 +19,6 @@ export class ExcelUpload {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  userId: string;
 
   @Column({ length: 255 })
   filename: string;
@@ -55,6 +53,6 @@ export class ExcelUpload {
 
   // Relations
   @ManyToOne(() => User, (user) => user.excelUploads, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }

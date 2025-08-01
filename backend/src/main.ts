@@ -30,10 +30,25 @@ async function bootstrap() {
   );
 
   // CORS 설정
-  app.enableCors({
-    origin: configService.get('FRONTEND_URL') || 'http://localhost:3000',
-    credentials: true,
-  });
+  const frontendUrl = configService.get('FRONTEND_URL');
+  const nodeEnv = configService.get('NODE_ENV');
+  
+  if (nodeEnv === 'production') {
+    // 프로덕션: Railway 도메인 허용
+    app.enableCors({
+      origin: [
+        frontendUrl || 'https://budget-production-b77e.up.railway.app',
+        /^https:\/\/.*\.up\.railway\.app$/
+      ],
+      credentials: true,
+    });
+  } else {
+    // 개발: localhost 허용
+    app.enableCors({
+      origin: ['http://localhost:3000', 'http://localhost:5173'],
+      credentials: true,
+    });
+  }
 
 
   // 정적 파일 서빙 (프론트엔드)

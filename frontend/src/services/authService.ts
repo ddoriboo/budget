@@ -132,7 +132,7 @@ class AuthService {
       throw new Error('오프라인 모드에서는 회원가입이 불가능합니다. 게스트 모드를 사용해주세요.');
     }
 
-    const response = await this.makeRequest<AuthResponse>('/api/auth/register', {
+    const response = await this.makeRequest<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -152,7 +152,7 @@ class AuthService {
       throw new Error('오프라인 모드에서는 로그인이 불가능합니다. 게스트 모드를 사용해주세요.');
     }
 
-    const response = await this.makeRequest<AuthResponse>('/api/auth/login', {
+    const response = await this.makeRequest<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -170,7 +170,7 @@ class AuthService {
     // 오프라인 모드이거나 게스트 모드일 때는 API 요청 건너뛰기
     if (!OFFLINE_MODE && !this.isGuestMode()) {
       try {
-        await this.makeRequest('/api/auth/logout', {
+        await this.makeRequest('/auth/logout', {
           method: 'POST',
         });
       } catch (error) {
@@ -185,7 +185,7 @@ class AuthService {
   // 토큰 검증
   async verifyToken(): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/verify');
+      const response = await this.makeRequest<ApiResponse<User>>('/auth/verify');
       if (response.success && response.data) {
         this.setUser(response.data);
         return response.data;
@@ -201,7 +201,7 @@ class AuthService {
   // 프로필 조회
   async getProfile(): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/profile');
+      const response = await this.makeRequest<ApiResponse<User>>('/auth/profile');
       if (response.success && response.data) {
         this.setUser(response.data);
         return response.data;
@@ -216,7 +216,7 @@ class AuthService {
   // 프로필 업데이트
   async updateProfile(updates: Partial<Pick<User, 'name' | 'profileImage' | 'settings'>>): Promise<User | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<User>>('/api/auth/profile', {
+      const response = await this.makeRequest<ApiResponse<User>>('/auth/profile', {
         method: 'PUT',
         body: JSON.stringify(updates),
       });
@@ -234,7 +234,7 @@ class AuthService {
 
   // 비밀번호 변경
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await this.makeRequest('/api/auth/change-password', {
+    await this.makeRequest('/auth/change-password', {
       method: 'PUT',
       body: JSON.stringify({
         currentPassword,
@@ -246,7 +246,7 @@ class AuthService {
   // 토큰 갱신
   async refreshToken(): Promise<string | null> {
     try {
-      const response = await this.makeRequest<ApiResponse<{ token: string }>>('/api/auth/refresh', {
+      const response = await this.makeRequest<ApiResponse<{ token: string }>>('/auth/refresh', {
         method: 'POST',
       });
 

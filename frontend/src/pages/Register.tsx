@@ -17,6 +17,9 @@ export const Register = () => {
   
   const { register, enableGuestMode, isLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // 오프라인 모드 체크
+  const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === 'true';
 
   // 비밀번호 유효성 검사
   const passwordValidation = {
@@ -96,6 +99,28 @@ export const Register = () => {
             AI와 함께하는 스마트한 가계부 여정을 시작해보세요
           </p>
         </div>
+
+        {/* 오프라인 모드 경고 */}
+        {isOfflineMode && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="bg-orange-50 border border-orange-200 rounded-xl p-4"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <XCircleIcon className="w-6 h-6 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-orange-800">오프라인 모드</h3>
+                <p className="text-sm text-orange-700 mt-1">
+                  현재 오프라인 모드에서는 회원가입이 불가능합니다. 게스트 모드를 사용해주세요.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* 회원가입 폼 */}
         <motion.div

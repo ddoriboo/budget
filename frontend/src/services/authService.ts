@@ -127,6 +127,11 @@ class AuthService {
 
   // 회원가입
   async register(userData: RegisterRequest): Promise<AuthResponse> {
+    // 오프라인 모드에서는 회원가입 불가 - 게스트 모드 안내
+    if (OFFLINE_MODE) {
+      throw new Error('오프라인 모드에서는 회원가입이 불가능합니다. 게스트 모드를 사용해주세요.');
+    }
+
     const response = await this.makeRequest<AuthResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -142,6 +147,11 @@ class AuthService {
 
   // 로그인
   async login(credentials: LoginRequest): Promise<AuthResponse> {
+    // 오프라인 모드에서는 일반 로그인 불가 - 게스트 모드 안내
+    if (OFFLINE_MODE) {
+      throw new Error('오프라인 모드에서는 로그인이 불가능합니다. 게스트 모드를 사용해주세요.');
+    }
+
     const response = await this.makeRequest<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),

@@ -14,6 +14,9 @@ export const Login = () => {
   
   const { login, enableGuestMode, isLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // 오프라인 모드 체크
+  const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === 'true';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +78,28 @@ export const Login = () => {
             똑똑한 AI와 함께하는 가계부 관리
           </p>
         </div>
+
+        {/* 오프라인 모드 경고 */}
+        {isOfflineMode && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="bg-orange-50 border border-orange-200 rounded-xl p-4"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <span className="text-lg">⚠️</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-orange-800">오프라인 모드</h3>
+                <p className="text-sm text-orange-700 mt-1">
+                  현재 오프라인 모드에서는 로그인이 불가능합니다. 게스트 모드를 사용해주세요.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* 로그인 폼 */}
         <motion.div

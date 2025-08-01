@@ -39,6 +39,13 @@ export interface ApiResponse<T = any> {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === 'true';
 
+// 디버깅을 위한 환경 변수 로그
+console.log('🔧 AuthService 환경 설정:', {
+  API_BASE_URL,
+  OFFLINE_MODE,
+  VITE_OFFLINE_MODE: import.meta.env.VITE_OFFLINE_MODE
+});
+
 class AuthService {
   private tokenKey = 'moneychat_token';
   private userKey = 'moneychat_user';
@@ -53,8 +60,20 @@ class AuthService {
   }
 
   removeToken(): void {
+    console.log('🗑️ 로그아웃: 토큰과 사용자 정보 제거');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
+    
+    // 추가로 관련된 모든 데이터 확실히 제거
+    const keysToRemove = [this.tokenKey, this.userKey];
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Failed to remove ${key}:`, error);
+      }
+    });
   }
 
   // 사용자 정보 관리
@@ -71,6 +90,7 @@ class AuthService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     // 오프라인 모드일 때는 API 요청하지 않음
     if (OFFLINE_MODE) {
+      console.log('⚠️ 오프라인 모드로 API 요청 차단:', endpoint);
       throw new Error('오프라인 모드입니다. 게스트 모드를 사용해주세요.');
     }
 
@@ -137,15 +157,19 @@ class AuthService {
 
   // 로그아웃
   async logout(): Promise<void> {
-    try {
-      await this.makeRequest('/api/auth/logout', {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('Logout API failed:', error);
-    } finally {
-      this.removeToken();
+    // 오프라인 모드이거나 게스트 모드일 때는 API 요청 건너뛰기
+    if (!OFFLINE_MODE && !this.isGuestMode()) {
+      try {
+        await this.makeRequest('/api/auth/logout', {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error('Logout API failed:', error);
+      }
     }
+    
+    // 항상 로컬 토큰과 사용자 정보 제거
+    this.removeToken();
   }
 
   // 토큰 검증

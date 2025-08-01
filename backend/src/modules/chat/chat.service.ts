@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { ChatSession } from '../../entities/chat-session.entity';
 import { CreateChatSessionDto, UpdateChatSessionDto, AddMessageDto } from '../../dto/chat.dto';
 
@@ -9,13 +9,19 @@ export class ChatService {
   constructor(
     @InjectRepository(ChatSession)
     private chatSessionRepository: Repository<ChatSession>,
+    private dataSource: DataSource,
   ) {}
 
   // 채팅 세션 생성
   async create(createChatSessionDto: CreateChatSessionDto, userId: string): Promise<ChatSession> {
+    const user = await this.dataSource.getRepository('User').findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const chatSession = this.chatSessionRepository.create({
       ...createChatSessionDto,
-      userId,
+      user,
       lastActivity: new Date(),
     });
 
@@ -25,7 +31,7 @@ export class ChatService {
   // 사용자의 모든 채팅 세션 조회
   async findAll(userId: string): Promise<ChatSession[]> {
     return await this.chatSessionRepository.find({
-      where: { userId },
+      where: { user: { id: userId } },
       order: { lastActivity: 'DESC' },
     });
   }
@@ -33,7 +39,7 @@ export class ChatService {
   // 특정 채팅 세션 조회
   async findOne(id: string, userId: string): Promise<ChatSession> {
     const chatSession = await this.chatSessionRepository.findOne({
-      where: { id, userId },
+      where: { id, user: { id: userId } },
     });
 
     if (!chatSession) {
@@ -46,7 +52,7 @@ export class ChatService {
   // 현재 활성 세션 조회 (가장 최근 업데이트된 세션)
   async getCurrentSession(userId: string): Promise<ChatSession | null> {
     return await this.chatSessionRepository.findOne({
-      where: { userId },
+      where: { user: { id: userId } },
       order: { lastActivity: 'DESC' },
     });
   }
@@ -87,7 +93,7 @@ export class ChatService {
   // 세션 정리 (오래된 세션 삭제)
   async cleanupOldSessions(userId: string, keepCount: number = 10): Promise<void> {
     const sessions = await this.chatSessionRepository.find({
-      where: { userId },
+      where: { user: { id: userId } },
       order: { lastActivity: 'DESC' },
       skip: keepCount,
     });

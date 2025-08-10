@@ -1,4 +1,4 @@
-# 머니챗 Railway 배포 가이드
+# 네이버 가계부 V2 Railway 배포 가이드
 
 ## 🚀 Railway 배포 단계
 
@@ -18,7 +18,7 @@ NODE_ENV=production
 PORT=3000
 
 # 선택적 환경 변수 (향후 백엔드 연동 시)
-DATABASE_URL=postgresql://user:password@host:5432/moneychat
+DATABASE_URL=postgresql://user:password@host:5432/naver_budget_v2
 REDIS_URL=redis://host:6379
 JWT_SECRET=your-production-jwt-secret
 ```

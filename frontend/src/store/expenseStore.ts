@@ -26,8 +26,8 @@ export interface ChatSession {
   lastMessageAt: Date;
 }
 
-const EXPENSES_KEY = 'moneychat_expenses';
-const CHAT_SESSIONS_KEY = 'moneychat_chat_sessions';
+const EXPENSES_KEY = 'naver_budget_v2_expenses';
+const CHAT_SESSIONS_KEY = 'naver_budget_v2_chat_sessions';
 
 class ExpenseStore {
   private useApi: boolean = false; // API 사용 여부 (로그인 상태에 따라 변경)

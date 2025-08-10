@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MoneyChat (머니챗) is an LLM-based conversational expense tracking web service that transforms traditional expense recording into natural conversations. Built with React/TypeScript frontend, NestJS backend, and Python NLP service using OpenAI GPT-4.
+Naver Budget V2 (네이버 가계부 V2) is an LLM-based conversational expense tracking web service that transforms traditional expense recording into natural conversations. Built with React/TypeScript frontend, NestJS backend, and Python NLP service using OpenAI GPT-4.
 
 ## Essential Commands
 
@@ -16,12 +16,12 @@ docker-compose up -d
 # Frontend development (React + Vite)
 cd frontend
 npm install
-npm run dev         # Starts Vite dev server
+npm run dev         # Starts Vite dev server on port 3000
 
 # Backend development (NestJS)
 cd backend
 npm install
-npm run start:dev   # Starts NestJS with watch mode
+npm run start:dev   # Starts NestJS with watch mode on port 4000
 
 # NLP service development (Python FastAPI)
 cd nlp-service
@@ -63,6 +63,7 @@ cd frontend && npm run build && npm start
   - `/frontend/src/services/apiClient.ts` - Axios client with auth interceptors
   - `/frontend/src/services/openai.ts` - OpenAI integration for chat processing
   - `/frontend/src/services/chatApi.ts` - Chat-specific API calls
+  - `/frontend/src/services/chatOrchestrator.ts` - LLM intent-based routing
 - **Key Pages**: Dashboard, Chat, Expenses, ExcelUpload, Reports, Settings
 - **Component Structure**: Layout components wrap pages with sidebar navigation
 
@@ -73,6 +74,7 @@ cd frontend && npm run build && npm start
   - expense: CRUD operations
   - excel: File upload processing
   - category: Hierarchical categories
+  - health: Health check endpoint
 - **Database**: PostgreSQL with TypeORM entities in `/backend/src/entities/`
 - **Guards & Interceptors**: JWT auth guard, error handling, logging
 
@@ -96,6 +98,7 @@ The frontend directly communicates with OpenAI API for chat processing (`/fronte
 - Date/time awareness with multiple format support
 - Transaction validation and confidence scoring
 - Batch processing for multiple transactions in one message
+- Intent analysis for routing to appropriate handlers
 
 ### Authentication Flow
 - JWT tokens stored in localStorage
@@ -115,8 +118,10 @@ The frontend directly communicates with OpenAI API for chat processing (`/fronte
 - `OPENAI_API_KEY`: For GPT-4 API access
 - `DATABASE_URL`: PostgreSQL connection
 - `JWT_SECRET`: Token signing
+- `JWT_EXPIRES_IN`: Token expiration (default: 30d)
 - `REDIS_URL`: Caching layer
 - `MINIO_*`: File storage credentials
+- `FRONTEND_URL`: For CORS configuration
 
 ## Common Development Tasks
 
@@ -128,8 +133,9 @@ The frontend directly communicates with OpenAI API for chat processing (`/fronte
 
 ### Modifying Chat Processing
 1. Update prompt in `/frontend/src/services/openai.ts`
-2. Adjust response parsing logic
-3. Test with various input formats
+2. Adjust intent analysis in `/frontend/src/services/intentAnalysis.ts`
+3. Update orchestrator routing in `/frontend/src/services/chatOrchestrator.ts`
+4. Test with various input formats
 
 ### Database Migrations
 - Entities auto-sync in development
@@ -140,3 +146,4 @@ The frontend directly communicates with OpenAI API for chat processing (`/fronte
 - Frontend built as static files, served via CDN
 - Health check endpoint: `/api/health`
 - Auto-restart policy with 3 retries on failure
+- Connection pooling optimized for Railway limits (10 connections in production)

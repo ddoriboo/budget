@@ -56,7 +56,7 @@ export const Header = () => {
 
         {/* 모바일 로고/제목 */}
         <div className="sm:hidden">
-          <h1 className="text-lg font-bold text-gray-900">머니챗</h1>
+          <h1 className="text-lg font-bold text-gray-900">네이버 가계부 V2</h1>
         </div>
 
         {/* 우측 액션 버튼들 */}

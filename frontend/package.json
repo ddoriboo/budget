@@ -1,7 +1,7 @@
 {
-  "name": "moneychat-frontend",
+  "name": "naver-budget-v2-frontend",
   "version": "1.0.0",
-  "description": "머니챗 프론트엔드 React 앱",
+  "description": "네이버 가계부 V2 프론트엔드 React 앱",
   "private": true,
   "scripts": {
     "dev": "vite",

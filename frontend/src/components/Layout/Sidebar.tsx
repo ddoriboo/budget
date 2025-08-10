@@ -57,7 +57,7 @@ export const Sidebar = () => {
     <div className="w-64 lg:w-80 bg-gray-600 text-white flex flex-col h-screen overflow-hidden">
       {/* 로고 */}
       <div className="p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
-        <h1 className="text-xl lg:text-2xl font-bold text-primary-400">머니챗</h1>
+        <h1 className="text-xl lg:text-2xl font-bold text-primary-400">네이버 가계부 V2</h1>
         <p className="text-gray-300 text-xs lg:text-sm mt-1">대화형 가계부</p>
       </div>
 

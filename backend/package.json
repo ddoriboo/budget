@@ -1,8 +1,8 @@
 {
-  "name": "moneychat-backend",
+  "name": "naver-budget-v2-backend",
   "version": "1.0.0",
-  "description": "머니챗 백엔드 API",
-  "author": "MoneyChat Team",
+  "description": "네이버 가계부 V2 백엔드 API",
+  "author": "Naver Budget V2 Team",
   "private": true,
   "license": "MIT",
   "scripts": {

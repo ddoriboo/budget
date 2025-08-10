@@ -1,7 +1,7 @@
 {
-  "name": "moneychat",
+  "name": "naver-budget-v2",
   "version": "1.0.0",
-  "description": "LLM 기반 대화형 가계부 웹 서비스",
+  "description": "네이버 가계부 V2 - LLM 기반 대화형 가계부 웹 서비스",
   "main": "index.js",
   "scripts": {
     "install-frontend": "cd frontend && npm install",
@@ -17,7 +17,7 @@
     "llm",
     "openai"
   ],
-  "author": "MoneyChat Team",
+  "author": "Naver Budget V2 Team",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

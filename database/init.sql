@@ -1,4 +1,4 @@
--- 머니챗 데이터베이스 초기화 스크립트
+-- 네이버 가계부 V2 데이터베이스 초기화 스크립트
 
 -- UUID 확장 설치
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

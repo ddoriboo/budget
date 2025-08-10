@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: moneychat-postgres
+    container_name: naver-budget-v2-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,7 +19,7 @@ services:
   # Redis for caching and sessions
   redis:
     image: redis:7-alpine
-    container_name: moneychat-redis
+    container_name: naver-budget-v2-redis
     ports:
       - "6379:6379"
     volumes:
@@ -29,7 +29,7 @@ services:
   # MinIO for file storage
   minio:
     image: minio/minio:latest
-    container_name: moneychat-minio
+    container_name: naver-budget-v2-minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -46,7 +46,7 @@ services:
     build: 
       context: ./nlp-service
       dockerfile: Dockerfile
-    container_name: moneychat-nlp
+    container_name: naver-budget-v2-nlp
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_URL=redis://redis:6379
@@ -63,7 +63,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: moneychat-backend
+    container_name: naver-budget-v2-backend
     environment:
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -92,7 +92,7 @@ services:
     build: 
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: moneychat-frontend
+    container_name: naver-budget-v2-frontend
     environment:
       - REACT_APP_API_URL=http://localhost:4000
       - REACT_APP_WS_URL=ws://localhost:4000

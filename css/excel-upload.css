@@ -1,6 +1,6 @@
 /* 
 ===========================================
-머니챗(MoneyChat) 엑셀 업로드 화면 스타일
+네이버 가계부 V2 엑셀 업로드 화면 스타일
 ===========================================
 */
 
@@ -401,7 +401,7 @@
   font-weight: var(--font-weight-bold);
 }
 
-.moneychat-field {
+.naver-budget-field {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
@@ -491,7 +491,7 @@
   }
   
   .excel-column,
-  .moneychat-field {
+  .naver-budget-field {
     justify-content: center;
   }
   

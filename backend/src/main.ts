@@ -71,7 +71,7 @@ async function bootstrap() {
   const port = configService.get('PORT') || 4000;
   await app.listen(port);
 
-  console.log(`🚀 머니챗 API가 http://localhost:${port}에서 실행 중입니다.`);
+  console.log(`🚀 네이버 가계부 V2 API가 http://localhost:${port}에서 실행 중입니다.`);
 }
 
 bootstrap();

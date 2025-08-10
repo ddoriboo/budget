@@ -1,4 +1,4 @@
-# 머니챗(MoneyChat) 기술 명세서
+# 네이버 가계부 V2 기술 명세서
 
 ## 1. 시스템 아키텍처
 
@@ -731,7 +731,7 @@ describe('Expense API Integration', () => {
 
 ```typescript
 // E2E Test with Playwright
-describe('MoneyChat E2E', () => {
+describe('Naver Budget V2 E2E', () => {
   test('complete expense flow', async ({ page }) => {
     // 1. 로그인
     await page.goto('/login');
@@ -800,20 +800,20 @@ CMD ["node", "dist/main.js"]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: moneychat-api
+  name: naver-budget-v2-api
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: moneychat-api
+      app: naver-budget-v2-api
   template:
     metadata:
       labels:
-        app: moneychat-api
+        app: naver-budget-v2-api
     spec:
       containers:
       - name: api
-        image: moneychat/api:latest
+        image: naver-budget-v2/api:latest
         ports:
         - containerPort: 3000
         env:
@@ -822,7 +822,7 @@ spec:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: moneychat-secrets
+              name: naver-budget-v2-secrets
               key: database-url
         resources:
           requests:
@@ -847,10 +847,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: moneychat-api
+  name: naver-budget-v2-api
 spec:
   selector:
-    app: moneychat-api
+    app: naver-budget-v2-api
   ports:
   - port: 80
     targetPort: 3000
@@ -909,19 +909,19 @@ jobs:
     
     - name: Build Docker image
       run: |
-        docker build -t moneychat/api:${{ github.sha }} .
-        docker tag moneychat/api:${{ github.sha }} moneychat/api:latest
+        docker build -t naver-budget-v2/api:${{ github.sha }} .
+        docker tag naver-budget-v2/api:${{ github.sha }} naver-budget-v2/api:latest
     
     - name: Push to registry
       run: |
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push moneychat/api:${{ github.sha }}
-        docker push moneychat/api:latest
+        docker push naver-budget-v2/api:${{ github.sha }}
+        docker push naver-budget-v2/api:latest
     
     - name: Deploy to Kubernetes
       run: |
-        kubectl set image deployment/moneychat-api api=moneychat/api:${{ github.sha }}
-        kubectl rollout status deployment/moneychat-api
+        kubectl set image deployment/naver-budget-v2-api api=naver-budget-v2/api:${{ github.sha }}
+        kubectl rollout status deployment/naver-budget-v2-api
 ```
 
 ---

@@ -1,6 +1,6 @@
 {
-  "name": "머니챗 - LLM 기반 대화형 가계부",
-  "short_name": "머니챗",
+  "name": "네이버 가계부 V2 - LLM 기반 대화형 가계부",
+  "short_name": "네이버 가계부 V2",
   "description": "가계부 작성을 업무가 아닌 대화로 만들어주는 지능형 가계부 서비스",
   "start_url": "/",
   "display": "standalone",

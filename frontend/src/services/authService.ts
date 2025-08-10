@@ -47,8 +47,8 @@ console.log('🔧 AuthService 환경 설정:', {
 });
 
 class AuthService {
-  private tokenKey = 'moneychat_token';
-  private userKey = 'moneychat_user';
+  private tokenKey = 'naver_budget_v2_token';
+  private userKey = 'naver_budget_v2_user';
 
   // 토큰 관리
   getToken(): string | null {

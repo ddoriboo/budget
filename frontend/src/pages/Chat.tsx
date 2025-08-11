@@ -62,13 +62,49 @@ export const Chat = () => {
     expenseStore.addMessageToSession(currentSession.id, userMessage);
 
     try {
-      // 대화 컨텍스트 구성 (최근 10개 메시지만)
-      const conversationHistory = updatedMessages
+      // 거래 데이터 포함 메시지를 필터링하는 함수
+      const filterTransactionMessages = (messages: Message[]) => {
+        return messages.filter(msg => {
+          // 사용자 메시지는 항상 포함
+          if (msg.type === 'user') return true;
+          
+          // AI 메시지 중에서 거래 관련 데이터가 포함된 것들 제외
+          if (msg.data?.multipleTransactions) return false; // 복수 거래 확인 메시지
+          if (msg.data?.actionType === 'expense_confirmation') return false; // 단일 거래 확인 메시지
+          
+          // 확인/저장 관련 키워드가 포함된 메시지 제외
+          const content = msg.content.toLowerCase();
+          const transactionKeywords = [
+            '저장되었습니다', '가계부에 저장', '내역이 저장', 
+            '거래 1', '거래 2', '거래 3', '거래 4', '거래 5',
+            '총 -', '총 +', '+원', '-원',
+            '날짜:', '장소:', '카테고리:', '금액:', '메모:'
+          ];
+          
+          const hasTransactionKeywords = transactionKeywords.some(keyword => 
+            content.includes(keyword)
+          );
+          
+          if (hasTransactionKeywords) return false;
+          
+          return true; // 일반적인 대화 메시지는 포함
+        });
+      };
+      
+      // 대화 컨텍스트 구성 (거래 데이터 제외하고 최근 10개 메시지만)
+      const filteredMessages = filterTransactionMessages(updatedMessages);
+      const conversationHistory = filteredMessages
         .slice(-10)
         .map(msg => ({
           role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
           content: msg.content
         }));
+      
+      console.log('🧹 필터링된 대화 이력:', {
+        전체메시지: updatedMessages.length,
+        필터링후: filteredMessages.length,
+        컨텍스트: conversationHistory.length
+      });
 
       // LLM Orchestration을 통한 분석
       const orchestrationResult: OrchestrationResult = await orchestrateChat(currentInput, conversationHistory);

@@ -216,21 +216,28 @@ Example: "삼겹살 2만원, 커피 5천원, 마트 3만원" → Create 3 separa
 🔴 CRITICAL RULE #2: USE EXACT DATES
 When user says "어제", use "${yesterday}", NOT "${today}"
 
+🔴 CRITICAL RULE #3: IDENTIFY INCOME VS EXPENSE
+**INCOME KEYWORDS** (type: "income"):
+- 월급, 급여, 봉급, 연봉
+- 받았다, 들어왔다, 입금, 지급
+- 보너스, 상여금, 인센티브
+- 용돈, 알바비, 부수입
+
+**EXPENSE KEYWORDS** (type: "expense"):
+- 썼다, 샀다, 결제, 지출
+- 먹었다, 마셨다, 탔다
+- 냈다, 지불, 구매
+
 📝 PARSING STRATEGY:
 1. Split the message by commas, "그리고", "또", or natural breaks
 2. Identify EACH expense/income item separately
-3. Create individual object for EACH item
-4. Count your objects - must match number of items mentioned
+3. Determine if it's income or expense based on keywords
+4. Create individual object for EACH item
+5. Count your objects - must match number of items mentioned
 
-💡 REAL EXAMPLE:
-Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
-
-Analysis:
-- Date: "어제" = ${yesterday}
-- 4 items found: 삼겹살(20000), 스벅(5000), 이마트(30000), 지하철(2000)
-- Create 4 expense objects
-
-Output JSON:
+💡 EXPENSE EXAMPLE:
+Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원 썼어"
+Output:
 {
   "expenses": [
     {
@@ -252,34 +259,39 @@ Output JSON:
       "memo": "커피",
       "confidence": 0.95,
       "type": "expense"
-    },
-    {
-      "date": "${yesterday}",
-      "amount": 30000,
-      "category": "쇼핑",
-      "subcategory": "생필품",
-      "place": "이마트",
-      "memo": "장보기",
-      "confidence": 0.9,
-      "type": "expense"
-    },
-    {
-      "date": "${yesterday}",
-      "amount": 2000,
-      "category": "교통",
-      "subcategory": "대중교통",
-      "place": "지하철",
-      "memo": "교통비",
-      "confidence": 0.95,
-      "type": "expense"
     }
   ],
   "clarification_needed": false
 }
 
+💰 INCOME EXAMPLE:
+Input: "월급 300만원 들어왔어"
+Output:
+{
+  "expenses": [
+    {
+      "date": "${today}",
+      "amount": 3000000,
+      "category": "급여",
+      "subcategory": "월급",
+      "place": "회사",
+      "memo": "월급",
+      "confidence": 0.95,
+      "type": "income"
+    }
+  ],
+  "clarification_needed": false
+}
+
+💰 MORE INCOME EXAMPLES:
+- "이번달 급여 250만원 받았어" → type: "income", category: "급여", place: "회사"
+- "보너스 100만원 입금됐어" → type: "income", category: "급여", subcategory: "보너스", place: "회사"
+- "알바비 50만원 들어왔어" → type: "income", category: "부수입", subcategory: "알바", place: "알바"
+- "용돈 10만원 받았어" → type: "income", category: "기타수입", subcategory: "용돈", place: "기타"
+
 📊 CATEGORIES:
 Expense: 식비, 교통, 쇼핑, 문화/여가, 주거/통신, 건강/의료, 교육, 경조사, 기타
-Income: 급여, 부수입, 기타수입
+Income: 급여 (월급, 보너스, 상여금), 부수입 (알바, 프리랜서), 기타수입 (용돈, 지원금)
 
 ⚠️ VALIDATION CHECKLIST:
 1. Count items in input message
@@ -287,6 +299,7 @@ Income: 급여, 부수입, 기타수입
 3. Numbers must match!
 4. Each item gets its own object
 5. Use correct date mapping
+6. Set correct "type" field: "income" or "expense"
 
 Always return valid JSON format with "expenses" array and "clarification_needed" boolean.
 
@@ -392,9 +405,13 @@ const analyzeExpenseFallback = (message: string): {
     date = parseRelativeDate('지난달');
   }
   
-  // 타입 결정 (수입 vs 지출)
-  const isIncome = lowerMessage.includes('월급') || lowerMessage.includes('받았') || 
-                   lowerMessage.includes('수입') || lowerMessage.includes('들어왔');
+  // 타입 결정 (수입 vs 지출) - 키워드 확장
+  const isIncome = lowerMessage.includes('월급') || lowerMessage.includes('급여') || 
+                   lowerMessage.includes('받았') || lowerMessage.includes('들어왔') ||
+                   lowerMessage.includes('수입') || lowerMessage.includes('입금') ||
+                   lowerMessage.includes('보너스') || lowerMessage.includes('상여') ||
+                   lowerMessage.includes('알바비') || lowerMessage.includes('용돈') ||
+                   lowerMessage.includes('봉급') || lowerMessage.includes('지급');
   
   // 메시지를 쉼표로 분리해서 각 항목 분석
   // 쉼표가 없으면 전체 메시지를 하나의 항목으로 처리
@@ -418,12 +435,40 @@ const analyzeExpenseFallback = (message: string): {
     else amount = num;
     
     // 카테고리 추출
-    let category = isIncome ? '급여' : '기타';
-    let subcategory = isIncome ? '월급' : '기타';
+    let category = '기타';
+    let subcategory = '기타';
     let place = '';
     let memo = '';
     
-    if (!isIncome) {
+    if (isIncome) {
+      // 수입 카테고리 분류
+      if (itemLower.includes('월급') || itemLower.includes('급여') || itemLower.includes('봉급')) {
+        category = '급여';
+        subcategory = '월급';
+        place = '회사';
+        memo = '월급';
+      } else if (itemLower.includes('보너스') || itemLower.includes('상여')) {
+        category = '급여';
+        subcategory = '보너스';
+        place = '회사';
+        memo = '보너스';
+      } else if (itemLower.includes('알바')) {
+        category = '부수입';
+        subcategory = '알바';
+        place = '알바';
+        memo = '알바비';
+      } else if (itemLower.includes('용돈')) {
+        category = '기타수입';
+        subcategory = '용돈';
+        place = '기타';
+        memo = '용돈';
+      } else {
+        category = '기타수입';
+        subcategory = '기타';
+        place = '기타';
+        memo = '수입';
+      }
+    } else {
       // 스타벅스, 커피
       if (itemLower.includes('스타벅스') || itemLower.includes('스벅')) {
         category = '식비';

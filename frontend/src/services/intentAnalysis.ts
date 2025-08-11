@@ -171,11 +171,21 @@ const fallbackIntentAnalysis = (message: string): IntentAnalysisResult => {
   }
   
   // 수입/지출 키워드 (더 정확하게)
-  const expenseKeywords = ['썼', '샀', '결제', '지출', '먹었', '마셨', '월급', '받았', '수입', '원', '만원', '천원'];
-  const matchedKeywords = expenseKeywords.filter(keyword => lowerMessage.includes(keyword));
-  console.log('🔧 수입/지출 키워드 매치:', matchedKeywords);
+  const expenseKeywords = ['썼', '샀', '결제', '지출', '먹었', '마셨', '냈', '탔'];
+  const incomeKeywords = ['월급', '급여', '받았', '수입', '들어왔', '입금', '보너스', '상여', '알바비', '용돈', '봉급'];
+  const amountKeywords = ['원', '만원', '천원'];
   
-  if (matchedKeywords.length > 0) {
+  const hasExpenseKeyword = expenseKeywords.some(keyword => lowerMessage.includes(keyword));
+  const hasIncomeKeyword = incomeKeywords.some(keyword => lowerMessage.includes(keyword));
+  const hasAmountKeyword = amountKeywords.some(keyword => lowerMessage.includes(keyword));
+  
+  console.log('🔧 키워드 매치:', {
+    expense: hasExpenseKeyword,
+    income: hasIncomeKeyword,
+    amount: hasAmountKeyword
+  });
+  
+  if ((hasExpenseKeyword || hasIncomeKeyword) && hasAmountKeyword) {
     console.log('✅ EXPENSE_INCOME 의도로 분류됨');
     return {
       intent: UserIntent.EXPENSE_INCOME,

@@ -93,7 +93,7 @@ export const Register = () => {
             <span className="text-3xl text-white">🚀</span>
           </motion.div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            머니챗 시작하기
+            네이버가계부V2 시작하기
           </h2>
           <p className="text-gray-600">
             AI와 함께하는 스마트한 가계부 여정을 시작해보세요
@@ -298,7 +298,7 @@ export const Register = () => {
           {/* 로그인 링크 */}
           <div className="text-center mt-6">
             <p className="text-sm text-gray-600">
-              already 계정이 있나요?{' '}
+              이미 계정이 있나요?{' '}
               <Link
                 to="/login"
                 className="font-medium text-green-600 hover:text-green-500 transition-colors"

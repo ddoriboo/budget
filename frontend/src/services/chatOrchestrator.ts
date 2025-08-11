@@ -245,7 +245,7 @@ const handleGeneralInquiry = async (
   intentResult: IntentAnalysisResult
 ): Promise<OrchestrationResult> => {
   
-  const helpResponse = `💬 **머니챗 사용법**\n\n` +
+  const helpResponse = `💬 **네이버가계부V2 사용법**\n\n` +
     `🎯 **할 수 있는 것들**:\n` +
     `• 지출/수입 기록: "어제 스벅에서 5천원 썼어"\n` +
     `• 예산 설정: "식비 예산 30만원으로 설정해줘"\n` +

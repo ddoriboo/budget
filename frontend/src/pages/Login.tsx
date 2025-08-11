@@ -72,7 +72,7 @@ export const Login = () => {
             <span className="text-3xl text-white">💰</span>
           </motion.div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            머니챗에 오신 것을 환영합니다!
+            네이버가계부V2에 오신 것을 환영합니다!
           </h2>
           <p className="text-gray-600">
             똑똑한 AI와 함께하는 가계부 관리

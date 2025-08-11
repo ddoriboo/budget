@@ -330,19 +330,19 @@ export const Chat = () => {
   return (
     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm">
       {/* 채팅 헤더 */}
-      <div className="border-b border-gray-200 p-4">
-        <h1 className="text-xl font-semibold text-gray-900">대화형 가계부</h1>
-        <p className="text-sm text-gray-500 mt-1">자유롭게 지출 내역을 말씀해주세요</p>
+      <div className="border-b border-gray-200 p-3 sm:p-4">
+        <h1 className="text-lg sm:text-xl font-semibold text-gray-900">대화형 가계부</h1>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">자유롭게 지출 내역을 말씀해주세요</p>
       </div>
 
       {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-xs lg:max-w-md ${
+            <div className={`max-w-[280px] sm:max-w-xs lg:max-w-md ${
               message.type === 'user' 
                 ? 'chat-bubble-user' 
                 : 'chat-bubble-ai'
@@ -388,16 +388,16 @@ export const Chat = () => {
                           </div>
                         ))}
                       </div>
-                      <div className="flex space-x-2 mt-3">
+                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-3">
                         <button 
                           onClick={() => handleConfirmExpense(message.id, message.data)}
-                          className="btn-primary touch-button flex-1 min-h-[44px]"
+                          className="btn-primary touch-button flex-1 min-h-[44px] text-sm sm:text-base"
                         >
                           모두 확인
                         </button>
                         <button 
                           onClick={() => handleEditExpense(message.id, message.data)}
-                          className="btn-secondary touch-button flex-1 min-h-[44px]"
+                          className="btn-secondary touch-button flex-1 min-h-[44px] text-sm sm:text-base"
                         >
                           수정
                         </button>
@@ -431,16 +431,16 @@ export const Chat = () => {
                           <span className="font-medium text-primary">{((message.data.confidence || 0) * 100).toFixed(0)}%</span>
                         </div>
                       </div>
-                      <div className="flex space-x-2 mt-3">
+                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-3">
                         <button 
                           onClick={() => handleConfirmExpense(message.id, message.data)}
-                          className="btn-primary touch-button flex-1 min-h-[44px]"
+                          className="btn-primary touch-button flex-1 min-h-[44px] text-sm sm:text-base"
                         >
                           확인
                         </button>
                         <button 
                           onClick={() => handleEditExpense(message.id, message.data)}
-                          className="btn-secondary touch-button flex-1 min-h-[44px]"
+                          className="btn-secondary touch-button flex-1 min-h-[44px] text-sm sm:text-base"
                         >
                           수정
                         </button>
@@ -478,13 +478,18 @@ export const Chat = () => {
       </div>
 
       {/* 빠른 제안 버튼들 */}
-      <div className="border-t border-gray-100 p-4">
+      <div className="border-t border-gray-100 p-3 sm:p-4">
         <div className="flex flex-wrap gap-2 mb-3">
-          {['어제 스타벅스에서 아메리카노 5천원 마셨어', '어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어', '지난주 금요일에 영화 1만5천원, 팝콘 8천원 썼어', '이번달 월급 300만원 들어왔어'].map((suggestion) => (
+          {[
+            '스타벅스 아메리카노 5천원',
+            '점심 삼겹살 2만원',
+            '영화 1만5천원',
+            '월급 300만원 들어왔어'
+          ].map((suggestion) => (
             <button
               key={suggestion}
               onClick={() => setInputValue(suggestion)}
-              className="touch-button px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-full text-sm text-gray-700 transition-colors min-h-[44px]"
+              className="touch-button px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-full text-xs sm:text-sm text-gray-700 transition-colors min-h-[40px] sm:min-h-[44px]"
             >
               {suggestion}
             </button>
@@ -493,25 +498,29 @@ export const Chat = () => {
       </div>
 
       {/* 입력 영역 */}
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex space-x-3">
+      <div className="border-t border-gray-200 p-3 sm:p-4 bg-white">
+        <div className="flex space-x-2 sm:space-x-3">
           <div className="flex-1">
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="자유롭게 말씀해주세요. 예: 어제 스타벅스에서 아메리카노 5천원 마셨어"
-              className="touch-input w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[48px]"
-              rows={2}
+              placeholder="예: 스타벅스 아메리카노 5천원"
+              className="touch-input w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[52px] sm:min-h-[48px] text-base"
+              rows={1}
+              style={{
+                fontSize: '16px', // iOS Safari zoom 방지
+                lineHeight: '1.4'
+              }}
               disabled={isLoading}
             />
           </div>
           <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="btn-primary touch-button disabled:opacity-50 disabled:cursor-not-allowed min-w-[48px] min-h-[48px] flex items-center justify-center"
+            className="btn-primary touch-button disabled:opacity-50 disabled:cursor-not-allowed min-w-[52px] min-h-[52px] sm:min-w-[48px] sm:min-h-[48px] flex items-center justify-center flex-shrink-0"
           >
-            <PaperAirplaneIcon className="w-5 h-5" />
+            <PaperAirplaneIcon className="w-5 h-5 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

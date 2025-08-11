@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BellIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { BellIcon, MagnifyingGlassIcon, ChevronDownIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 
-export const Header = () => {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export const Header = ({ onMenuClick }: HeaderProps) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, logout, isGuestMode } = useAuth();
   const navigate = useNavigate();
@@ -42,27 +46,37 @@ export const Header = () => {
   return (
     <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
-        {/* 검색바 */}
-        <div className="flex-1 max-w-md hidden sm:block">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="지출 내역 검색..."
-              className="input-enhanced w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px]"
-            />
+        {/* 모바일 메뉴 버튼 */}
+        <div className="flex items-center">
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden touch-button p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 active:bg-gray-200 min-w-[44px] min-h-[44px] mr-3"
+          >
+            <Bars3Icon className="w-6 h-6" />
+          </button>
+          
+          {/* 검색바 - 데스크톱에서만 표시 */}
+          <div className="flex-1 max-w-md hidden lg:block">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="지출 내역 검색..."
+                className="input-enhanced w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px]"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* 모바일 로고/제목 */}
-        <div className="sm:hidden">
-          <h1 className="text-lg font-bold text-gray-900">네이버 가계부 V2</h1>
+          {/* 모바일 로고/제목 */}
+          <div className="lg:hidden">
+            <h1 className="text-lg font-bold text-gray-900">네이버 가계부 V2</h1>
+          </div>
         </div>
 
         {/* 우측 액션 버튼들 */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* 모바일 검색 버튼 */}
-          <button className="touch-button sm:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 active:bg-gray-200 min-w-[44px] min-h-[44px]">
+          <button className="touch-button lg:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 active:bg-gray-200 min-w-[44px] min-h-[44px]">
             <MagnifyingGlassIcon className="w-6 h-6" />
           </button>
           
@@ -70,7 +84,7 @@ export const Header = () => {
             <BellIcon className="w-6 h-6" />
           </button>
           
-          <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+          <div className="h-6 w-px bg-gray-300 hidden lg:block"></div>
           
           {/* 사용자 메뉴 */}
           <div className="relative">
@@ -79,7 +93,7 @@ export const Header = () => {
               className="flex items-center space-x-3 touch-button p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 min-h-[44px]"
             >
               <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
+                <div className="text-right hidden lg:block">
                   <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
                   <div className="text-xs text-gray-500">{getUserStatus()}</div>
                 </div>
@@ -88,7 +102,7 @@ export const Header = () => {
                     {isGuestMode ? '게' : getInitials(getUserDisplayName())}
                   </span>
                 </div>
-                <ChevronDownIcon className="w-4 h-4 text-gray-400 hidden sm:block" />
+                <ChevronDownIcon className="w-4 h-4 text-gray-400 hidden lg:block" />
               </div>
             </button>
 

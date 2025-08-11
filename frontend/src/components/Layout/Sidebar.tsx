@@ -5,7 +5,8 @@ import {
   ChatBubbleLeftRightIcon, 
   DocumentArrowUpIcon,
   ChartBarIcon,
-  Cog6ToothIcon 
+  Cog6ToothIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { expenseStore } from '@/store/expenseStore';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,7 +19,11 @@ const navigation = [
   { name: '설정', href: '/settings', icon: Cog6ToothIcon },
 ];
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export const Sidebar = ({ onClose }: SidebarProps) => {
   const { user, isGuestMode } = useAuth();
   const [stats, setStats] = useState({
     totalAmount: 0,
@@ -55,10 +60,20 @@ export const Sidebar = () => {
 
   return (
     <div className="w-64 lg:w-80 bg-gray-600 text-white flex flex-col h-screen overflow-hidden">
-      {/* 로고 */}
+      {/* 헤더 로고 & 닫기 버튼 */}
       <div className="p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
-        <h1 className="text-xl lg:text-2xl font-bold text-primary-400">네이버 가계부 V2</h1>
-        <p className="text-gray-300 text-xs lg:text-sm mt-1">대화형 가계부</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg lg:text-2xl font-bold text-primary-400">네이버 가계부 V2</h1>
+            <p className="text-gray-300 text-xs lg:text-sm mt-1">대화형 가계부</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="lg:hidden touch-button p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg min-w-[40px] min-h-[40px]"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* 자산 현황 요약 */}
@@ -93,6 +108,7 @@ export const Sidebar = () => {
             <li key={item.name}>
               <NavLink
                 to={item.href}
+                onClick={() => onClose && onClose()}
                 className={({ isActive }) =>
                   `flex items-center px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-colors ${
                     isActive

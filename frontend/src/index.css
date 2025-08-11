@@ -83,7 +83,9 @@
 
   /* 채팅 버블 스타일 */
   .chat-bubble {
-    @apply max-w-xs lg:max-w-md px-4 py-2 rounded-2xl;
+    @apply max-w-[280px] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-2xl text-sm sm:text-base;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .chat-bubble-user {
@@ -91,7 +93,7 @@
   }
 
   .chat-bubble-ai {
-    @apply chat-bubble bg-white border border-gray-200 mr-auto;
+    @apply chat-bubble bg-white border border-gray-200 mr-auto shadow-sm;
   }
 
   /* 로딩 애니메이션 */
@@ -153,10 +155,27 @@
   /* 모바일 터치 최적화 */
   .touch-button {
     @apply min-h-[48px] px-4 py-3 text-base touch-target;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
 
   .touch-input {
     @apply min-h-[48px] px-4 py-3 text-base;
+    -webkit-appearance: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* 모바일 입력 필드 최적화 */
+  .touch-input:focus {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* iOS Safari 줌 방지 */
+  @media screen and (max-width: 768px) {
+    .touch-input {
+      font-size: 16px !important;
+    }
   }
 
   /* 모바일 반응형 그리드 */

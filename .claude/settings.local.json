@@ -28,7 +28,8 @@
       "WebFetch(domain:budget-production.up.railway.app)",
       "WebFetch(domain:budget-backend-production.up.railway.app)",
       "WebFetch(domain:web-production-123a.up.railway.app)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git config:*)"
     ],
     "deny": []
   }

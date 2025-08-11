@@ -235,8 +235,10 @@ When user says "어제", use "${yesterday}", NOT "${today}"
 4. Create individual object for EACH item
 5. Count your objects - must match number of items mentioned
 
-💡 EXPENSE EXAMPLE:
-Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원 썼어"
+💡 EXPENSE EXAMPLES:
+
+**Example 1 - Multiple Items:**
+Input: "어제 점심으로 삼겹살 2만원, 스벅 5천원, 이마트 3만원, 지하철 2천원 냈어"
 Output:
 {
   "expenses": [
@@ -258,6 +260,55 @@ Output:
       "place": "스타벅스",
       "memo": "커피",
       "confidence": 0.95,
+      "type": "expense"
+    },
+    {
+      "date": "${yesterday}",
+      "amount": 30000,
+      "category": "쇼핑",
+      "subcategory": "생필품",
+      "place": "이마트",
+      "memo": "장보기",
+      "confidence": 0.9,
+      "type": "expense"
+    },
+    {
+      "date": "${yesterday}",
+      "amount": 2000,
+      "category": "교통",
+      "subcategory": "대중교통",
+      "place": "지하철",
+      "memo": "교통비",
+      "confidence": 0.95,
+      "type": "expense"
+    }
+  ],
+  "clarification_needed": false
+}
+
+**Example 2 - Movie & Snacks:**
+Input: "지난주 금요일에 영화 1만5천원, 팝콘 8천원 썼어"
+Output:
+{
+  "expenses": [
+    {
+      "date": "${lastWeek}",
+      "amount": 15000,
+      "category": "문화/여가",
+      "subcategory": "엔터테인먼트",
+      "place": "영화관",
+      "memo": "영화",
+      "confidence": 0.9,
+      "type": "expense"
+    },
+    {
+      "date": "${lastWeek}",
+      "amount": 8000,
+      "category": "식비",
+      "subcategory": "간식",
+      "place": "영화관",
+      "memo": "팝콘",
+      "confidence": 0.9,
       "type": "expense"
     }
   ],

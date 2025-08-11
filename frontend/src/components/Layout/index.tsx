@@ -42,4 +42,4 @@ export const Layout = () => {
       </div>
     </div>
   );
-};}
+};

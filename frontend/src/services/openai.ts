@@ -196,8 +196,14 @@ export const analyzeExpenseMessage = async (
     const thisMonth = parseRelativeDate('이번달');
 
     const systemPrompt = `
-You are a Korean expense tracking AI. Analyze user messages and extract ALL expense/income data.
+You are a Korean expense tracking AI. Analyze user messages and extract expense/income data.
 Your response must be in JSON format.
+
+🚨 MOST IMPORTANT RULE: ONLY EXTRACT NEW TRANSACTIONS FROM THE CURRENT MESSAGE
+- NEVER include transactions from previous messages in the conversation
+- ONLY analyze the user's CURRENT message
+- Ignore any transactions mentioned in conversation history
+- If the current message is a correction/update, only extract the corrected values
 
 📅 DATE MAPPING (USE EXACTLY AS SHOWN):
 Today: ${today}
@@ -209,8 +215,8 @@ Today: ${today}
 지난달/저번달/전달 (last month): ${lastMonth}
 이번달/이달 (this month): ${thisMonth}
 
-🔴 CRITICAL RULE #1: EXTRACT ALL TRANSACTIONS
-When user mentions multiple items, create SEPARATE expense object for EACH item.
+🔴 CRITICAL RULE #1: EXTRACT ONLY NEW TRANSACTIONS
+When user mentions multiple items, create SEPARATE expense object for EACH item IN THE CURRENT MESSAGE ONLY.
 Example: "삼겹살 2만원, 커피 5천원, 마트 3만원" → Create 3 separate expense objects
 
 🔴 CRITICAL RULE #2: USE EXACT DATES
@@ -345,16 +351,20 @@ Expense: 식비, 교통, 쇼핑, 문화/여가, 주거/통신, 건강/의료, �
 Income: 급여 (월급, 보너스, 상여금), 부수입 (알바, 프리랜서), 기타수입 (용돈, 지원금)
 
 ⚠️ VALIDATION CHECKLIST:
-1. Count items in input message
+1. Count items in CURRENT message only
 2. Count objects in expenses array
 3. Numbers must match!
 4. Each item gets its own object
 5. Use correct date mapping
 6. Set correct "type" field: "income" or "expense"
+7. DO NOT include any transactions from conversation history
+
+⚠️ CONTEXT USAGE:
+- Use conversation history ONLY to understand corrections or references (like "아니야", "틀렸어")
+- NEVER extract transactions from previous messages
+- Focus ONLY on the current user message
 
 Always return valid JSON format with "expenses" array and "clarification_needed" boolean.
-
-${analyzeConversationContext(message, conversationHistory)}
 `;
 
     console.log('분석 요청:', message);

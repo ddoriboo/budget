@@ -71,6 +71,8 @@ export const Chat = () => {
           // AI 메시지 중에서 거래 관련 데이터가 포함된 것들 제외
           if (msg.data?.multipleTransactions) return false; // 복수 거래 확인 메시지
           if (msg.data?.actionType === 'expense_confirmation') return false; // 단일 거래 확인 메시지
+          if (msg.data?.amount) return false; // 금액 데이터가 있는 메시지 제외
+          if (msg.data?.transactions) return false; // 거래 데이터가 있는 메시지 제외
           
           // 확인/저장 관련 키워드가 포함된 메시지 제외
           const content = msg.content.toLowerCase();
@@ -78,7 +80,8 @@ export const Chat = () => {
             '저장되었습니다', '가계부에 저장', '내역이 저장', 
             '거래 1', '거래 2', '거래 3', '거래 4', '거래 5',
             '총 -', '총 +', '+원', '-원',
-            '날짜:', '장소:', '카테고리:', '금액:', '메모:'
+            '날짜:', '장소:', '카테고리:', '금액:', '메모:',
+            '분석했어요!', '내역을 찾았어요', '맞나요?'
           ];
           
           const hasTransactionKeywords = transactionKeywords.some(keyword => 
